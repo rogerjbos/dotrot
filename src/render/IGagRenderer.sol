@@ -8,9 +8,8 @@ pragma solidity ^0.8.27;
  *         the heavy Metadata/Renderer/Templates bytecode into GigglesAndGags.
  */
 interface IGagRenderer {
-    function buildTokenURI(
-        string calldata collectionName,
-        uint256 tokenId,
-        string calldata text
-    ) external pure returns (string memory);
+    function buildTokenURI(string calldata collectionName, uint256 tokenId, string calldata text)
+        external
+        pure
+        returns (string memory);
 }

@@ -15,7 +15,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 ///      or: forge test --match-contract GigglesAndGagsForkTest --rpc-url $BASE_RPC_URL
 ///      Requires a Base mainnet RPC endpoint (e.g. from Alchemy, Infura, or a public RPC).
 contract GigglesAndGagsForkTest is Test {
-
     // -------------------------------------------------------------------------
     //  Base Mainnet Token Addresses
     // -------------------------------------------------------------------------
@@ -36,15 +35,15 @@ contract GigglesAndGagsForkTest is Test {
 
     address public owner = makeAddr("forkOwner");
     address public alice = makeAddr("forkAlice");
-    address public bob   = makeAddr("forkBob");
+    address public bob = makeAddr("forkBob");
     address public carol = makeAddr("forkCarol");
     address public treasury = makeAddr("forkTreasury");
 
-    uint256 public constant USDC_MINT_PRICE = 1e6;    // 1 USDC
-    uint256 public constant USDC_BURN_FEE   = 0.5e6;  // 0.5 USDC
-    uint256 public constant USDT_MINT_PRICE = 1e6;     // 1 USDT
-    uint256 public constant USDT_BURN_FEE   = 0.5e6;   // 0.5 USDT
-    uint8   public constant QUEUE_SIZE = 15;
+    uint256 public constant USDC_MINT_PRICE = 1e6; // 1 USDC
+    uint256 public constant USDC_BURN_FEE = 0.5e6; // 0.5 USDC
+    uint256 public constant USDT_MINT_PRICE = 1e6; // 1 USDT
+    uint256 public constant USDT_BURN_FEE = 0.5e6; // 0.5 USDT
+    uint8 public constant QUEUE_SIZE = 15;
 
     string[15] internal seedMessages = [
         "gm ser",
@@ -97,10 +96,10 @@ contract GigglesAndGagsForkTest is Test {
 
         // Deal real stablecoins to test accounts using Foundry's `deal`.
         deal(USDC, alice, 100_000e6);
-        deal(USDC, bob,   100_000e6);
+        deal(USDC, bob, 100_000e6);
         deal(USDC, carol, 100_000e6);
         deal(USDT, alice, 100_000e6);
-        deal(USDT, bob,   100_000e6);
+        deal(USDT, bob, 100_000e6);
         deal(USDT, carol, 100_000e6);
 
         // Approve GaG to spend tokens.
@@ -138,9 +137,16 @@ contract GigglesAndGagsForkTest is Test {
         if (value == 0) return "0";
         uint256 temp = value;
         uint256 digits;
-        while (temp != 0) { digits++; temp /= 10; }
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
         bytes memory buffer = new bytes(digits);
-        while (value != 0) { digits -= 1; buffer[digits] = bytes1(uint8(48 + uint256(value % 10))); value /= 10; }
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
         return string(buffer);
     }
 

@@ -63,10 +63,11 @@ library Renderer {
      * @return svg  The complete SVG markup string.
      * @return data The derived `RenderData` struct (useful for metadata attribute generation).
      */
-    function renderSVG(
-        uint256 tokenId,
-        string memory text
-    ) internal pure returns (string memory svg, RenderData memory data) {
+    function renderSVG(uint256 tokenId, string memory text)
+        internal
+        pure
+        returns (string memory svg, RenderData memory data)
+    {
         data = deriveRenderData(text);
 
         // Build SVG in two halves to avoid stack-too-deep from 12+ concat args.
@@ -90,21 +91,13 @@ library Renderer {
         if (data.twoLines) {
             svg = string.concat(
                 head,
-                Templates.buildTwoLineTextNode(
-                    Utils.escapeXML(data.line1),
-                    Utils.escapeXML(data.line2),
-                    data.fontSize
-                ),
+                Templates.buildTwoLineTextNode(Utils.escapeXML(data.line1), Utils.escapeXML(data.line2), data.fontSize),
                 tail
             );
         } else {
             svg = string.concat(
                 head,
-                Templates.buildSingleLineTextNode(
-                    Utils.escapeXML(data.line1),
-                    data.fontSize,
-                    data.textVariant
-                ),
+                Templates.buildSingleLineTextNode(Utils.escapeXML(data.line1), data.fontSize, data.textVariant),
                 tail
             );
         }
@@ -155,17 +148,35 @@ library Renderer {
     function attributesJSON(RenderData memory data) internal pure returns (string memory) {
         // Split into two halves to avoid stack-too-deep from 18 concat args.
         string memory part1 = string.concat(
-            '[{"trait_type":"Background","value":"', data.backgroundName, '"},',
-            '{"trait_type":"Frame","value":"', data.frameName, '"},',
-            '{"trait_type":"Tone","value":"', data.toneName, '"},',
-            '{"trait_type":"Mood","value":"', data.moodName, '"},'
+            '[{"trait_type":"Background","value":"',
+            data.backgroundName,
+            '"},',
+            '{"trait_type":"Frame","value":"',
+            data.frameName,
+            '"},',
+            '{"trait_type":"Tone","value":"',
+            data.toneName,
+            '"},',
+            '{"trait_type":"Mood","value":"',
+            data.moodName,
+            '"},'
         );
         string memory part2 = string.concat(
-            '{"trait_type":"Badge","value":"', data.badgeLabel, '"},',
-            '{"trait_type":"Caption","value":"', data.caption, '"},',
-            '{"trait_type":"Layout","value":"', (data.twoLines ? "Two Lines" : "Single Line"), '"},',
-            '{"trait_type":"Rare","value":"', (data.rareMode ? "Yes" : "No"), '"},',
-            '{"display_type":"number","trait_type":"Length","value":', _toString(data.length), "}]"
+            '{"trait_type":"Badge","value":"',
+            data.badgeLabel,
+            '"},',
+            '{"trait_type":"Caption","value":"',
+            data.caption,
+            '"},',
+            '{"trait_type":"Layout","value":"',
+            (data.twoLines ? "Two Lines" : "Single Line"),
+            '"},',
+            '{"trait_type":"Rare","value":"',
+            (data.rareMode ? "Yes" : "No"),
+            '"},',
+            '{"display_type":"number","trait_type":"Length","value":',
+            _toString(data.length),
+            "}]"
         );
         return string.concat(part1, part2);
     }
@@ -267,7 +278,7 @@ library Renderer {
             anySpace = true;
 
             // O(1) sub-range lookups via prefix sums.
-            uint256 leftScore = prefix[i];                    // score of raw[0..i-1]
+            uint256 leftScore = prefix[i]; // score of raw[0..i-1]
             uint256 rightScore = prefix[len] - prefix[i + 1]; // score of raw[i+1..len-1]
 
             uint256 maxScore = leftScore > rightScore ? leftScore : rightScore;
@@ -308,11 +319,7 @@ library Renderer {
      * @param end   End index (exclusive).
      * @return score The cumulative width score.
      */
-    function _visualWidthScore(
-        bytes memory raw,
-        uint256 start,
-        uint256 end
-    ) private pure returns (uint256 score) {
+    function _visualWidthScore(bytes memory raw, uint256 start, uint256 end) private pure returns (uint256 score) {
         for (uint256 i = start; i < end; i++) {
             score += _charWidthScore(raw[i]);
         }
@@ -334,45 +341,45 @@ library Renderer {
         if (c == 0x20) return 4;
         // narrow characters
         if (
-            c == 0x69 || // i
-            c == 0x6C || // l
-            c == 0x49 || // I
-            c == 0x2E || // .
-            c == 0x2C || // ,
-            c == 0x21 || // !
-            c == 0x3A || // :
-            c == 0x3B || // ;
-            c == 0x27 || // '
-            c == 0x22 || // "
-            c == 0x7C    // |
+            c == 0x69 // i
+                || c == 0x6C // l
+                || c == 0x49 // I
+                || c == 0x2E // .
+                || c == 0x2C // ,
+                || c == 0x21 // !
+                || c == 0x3A // :
+                || c == 0x3B // ;
+                || c == 0x27 // '
+                || c == 0x22 // "
+                || c == 0x7C // |
         ) return 4;
         // wide characters
         if (
-            c == 0x57 || // W
-            c == 0x4D || // M
-            c == 0x40 || // @
-            c == 0x23 || // #
-            c == 0x26 || // &
-            c == 0x25 || // %
-            c == 0x51 || // Q
-            c == 0x4F || // O
-            c == 0x47 || // G
-            c == 0x44 || // D
-            c == 0x48 || // H
-            c == 0x4E || // N
-            c == 0x55    // U
+            c == 0x57 // W
+                || c == 0x4D // M
+                || c == 0x40 // @
+                || c == 0x23 // #
+                || c == 0x26 // &
+                || c == 0x25 // %
+                || c == 0x51 // Q
+                || c == 0x4F // O
+                || c == 0x47 // G
+                || c == 0x44 // D
+                || c == 0x48 // H
+                || c == 0x4E // N
+                || c == 0x55 // U
         ) return 9;
         // medium-narrow punctuation
         if (
-            c == 0x28 || // (
-            c == 0x29 || // )
-            c == 0x5B || // [
-            c == 0x5D || // ]
-            c == 0x2F || // /
-            c == 0x2D || // -
-            c == 0x5F || // _
-            c == 0x2B || // +
-            c == 0x3F    // ?
+            c == 0x28 // (
+                || c == 0x29 // )
+                || c == 0x5B // [
+                || c == 0x5D // ]
+                || c == 0x2F // /
+                || c == 0x2D // -
+                || c == 0x5F // _
+                || c == 0x2B // +
+                || c == 0x3F // ?
         ) return 5;
         // default medium
         return 7;
@@ -387,11 +394,7 @@ library Renderer {
      * @param textVariant  The text style variant (0, 1, or 2).
      * @return The computed font size in pixels.
      */
-    function _fontSizeFromWidth(
-        uint256 maxLineScore,
-        bool twoLines,
-        uint8 textVariant
-    ) private pure returns (uint256) {
+    function _fontSizeFromWidth(uint256 maxLineScore, bool twoLines, uint8 textVariant) private pure returns (uint256) {
         uint256 base;
 
         if (!twoLines) {
@@ -441,11 +444,7 @@ library Renderer {
      * @param end   End byte index (exclusive).
      * @return The extracted substring.
      */
-    function _substring(
-        string memory str,
-        uint256 start,
-        uint256 end
-    ) private pure returns (string memory) {
+    function _substring(string memory str, uint256 start, uint256 end) private pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         bytes memory result = new bytes(end - start);
 

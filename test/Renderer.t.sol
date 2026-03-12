@@ -9,7 +9,6 @@ import {Metadata} from "../src/render/Metadata.sol";
 /// @notice Unit and fuzz tests for the Renderer and Metadata libraries.
 ///         Validates SVG rendering, trait derivation, layout splitting, and metadata generation.
 contract RendererTest is Test {
-
     // =========================================================================
     //  renderSVG — Basic Rendering
     // =========================================================================
@@ -119,9 +118,7 @@ contract RendererTest is Test {
         string[3] memory validFrameNames = ["Soft Coping", "Double Down", "Badge of Shame"];
 
         for (uint256 i = 0; i < 20; i++) {
-            Renderer.RenderData memory data = Renderer.deriveRenderData(
-                string(abi.encodePacked("frame", i))
-            );
+            Renderer.RenderData memory data = Renderer.deriveRenderData(string(abi.encodePacked("frame", i)));
             bool valid = false;
             for (uint256 j = 0; j < 3; j++) {
                 if (keccak256(bytes(data.frameName)) == keccak256(bytes(validFrameNames[j]))) {
@@ -137,9 +134,7 @@ contract RendererTest is Test {
         string[3] memory validToneNames = ["Deadpan", "Posting", "Meltdown"];
 
         for (uint256 i = 0; i < 20; i++) {
-            Renderer.RenderData memory data = Renderer.deriveRenderData(
-                string(abi.encodePacked("tone", i))
-            );
+            Renderer.RenderData memory data = Renderer.deriveRenderData(string(abi.encodePacked("tone", i)));
             bool valid = false;
             for (uint256 j = 0; j < 3; j++) {
                 if (keccak256(bytes(data.toneName)) == keccak256(bytes(validToneNames[j]))) {
@@ -155,9 +150,7 @@ contract RendererTest is Test {
         string[4] memory validMoodNames = ["Giggly", "Snarky", "Spicy", "Terminal"];
 
         for (uint256 i = 0; i < 30; i++) {
-            Renderer.RenderData memory data = Renderer.deriveRenderData(
-                string(abi.encodePacked("mood", i))
-            );
+            Renderer.RenderData memory data = Renderer.deriveRenderData(string(abi.encodePacked("mood", i)));
             bool valid = false;
             for (uint256 j = 0; j < 4; j++) {
                 if (keccak256(bytes(data.moodName)) == keccak256(bytes(validMoodNames[j]))) {
@@ -179,9 +172,7 @@ contract RendererTest is Test {
     }
 
     function test_layout_longText_twoLines() public pure {
-        Renderer.RenderData memory data = Renderer.deriveRenderData(
-            "this is a much longer message that should wrap"
-        );
+        Renderer.RenderData memory data = Renderer.deriveRenderData("this is a much longer message that should wrap");
         assertTrue(data.twoLines);
     }
 
@@ -201,9 +192,8 @@ contract RendererTest is Test {
 
     function test_layout_fontSizeDecreases_withLength() public pure {
         Renderer.RenderData memory short_ = Renderer.deriveRenderData("hi");
-        Renderer.RenderData memory long_ = Renderer.deriveRenderData(
-            "this message is intentionally very long to test font shrinking"
-        );
+        Renderer.RenderData memory long_ =
+            Renderer.deriveRenderData("this message is intentionally very long to test font shrinking");
         assertTrue(short_.fontSize > long_.fontSize, "Longer text should have smaller font");
     }
 
@@ -276,8 +266,7 @@ contract RendererTest is Test {
 
         // Same text but different token IDs → different URIs (name includes token ID).
         assertTrue(
-            keccak256(bytes(uri0)) != keccak256(bytes(uri1)),
-            "Different token IDs should produce different URIs"
+            keccak256(bytes(uri0)) != keccak256(bytes(uri1)), "Different token IDs should produce different URIs"
         );
     }
 
@@ -285,10 +274,7 @@ contract RendererTest is Test {
         string memory uri1 = Metadata.buildTokenURI("GaG", 0, "hello");
         string memory uri2 = Metadata.buildTokenURI("GaG", 0, "world");
 
-        assertTrue(
-            keccak256(bytes(uri1)) != keccak256(bytes(uri2)),
-            "Different texts should produce different URIs"
-        );
+        assertTrue(keccak256(bytes(uri1)) != keccak256(bytes(uri2)), "Different texts should produce different URIs");
     }
 
     // =========================================================================

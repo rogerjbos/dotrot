@@ -16,7 +16,6 @@ contract UtilsHarness {
 /// @title UtilsTest
 /// @notice Unit tests for the Utils library (text validation and XML escaping).
 contract UtilsTest is Test {
-
     UtilsHarness internal harness;
 
     function setUp() public {
@@ -252,8 +251,7 @@ contract UtilsTest is Test {
     function test_escapeXML_longMixedSpecialChars() public pure {
         // Exercises the two-pass path with a realistic message containing several entity types.
         assertEq(
-            Utils.escapeXML("Tom & Jerry's <Great> \"Show\""),
-            "Tom &amp; Jerry&apos;s &lt;Great&gt; &quot;Show&quot;"
+            Utils.escapeXML("Tom & Jerry's <Great> \"Show\""), "Tom &amp; Jerry&apos;s &lt;Great&gt; &quot;Show&quot;"
         );
     }
 

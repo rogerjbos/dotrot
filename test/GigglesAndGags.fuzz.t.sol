@@ -12,16 +12,12 @@ import {Utils} from "../src/render/Utils.sol";
 ///         Covers randomised inputs for minting, burning, accounting invariants,
 ///         fee splits, text validation, and rendering.
 contract GigglesAndGagsFuzzTest is BaseTest {
-
     // =========================================================================
     //  Fuzz: submitMintIntent
     // =========================================================================
 
     /// @notice Fuzz the mint flow with random block entropy and verify minting always occurs.
-    function testFuzz_submitMintIntent_alwaysMints(
-        uint256 prevrandao,
-        uint256 blockNumber
-    ) public {
+    function testFuzz_submitMintIntent_alwaysMints(uint256 prevrandao, uint256 blockNumber) public {
         // Bound block number to reasonable range.
         blockNumber = bound(blockNumber, 1, 1e9);
         vm.roll(blockNumber);
@@ -35,10 +31,7 @@ contract GigglesAndGagsFuzzTest is BaseTest {
     }
 
     /// @notice Fuzz: the slot index is always in [0, queueSize).
-    function testFuzz_calculateMintIntentIndex_bounded(
-        uint256 prevrandao,
-        uint256 blockNumber
-    ) public {
+    function testFuzz_calculateMintIntentIndex_bounded(uint256 prevrandao, uint256 blockNumber) public {
         blockNumber = bound(blockNumber, 1, 1e9);
         vm.roll(blockNumber);
         vm.prevrandao(bytes32(prevrandao));
@@ -115,10 +108,7 @@ contract GigglesAndGagsFuzzTest is BaseTest {
                     gag.burnToken(tid, address(usdc));
 
                     // Contract balance should increase by exactly the burn fee.
-                    assertEq(
-                        usdc.balanceOf(address(gag)),
-                        contractBalBefore + BURN_FEE
-                    );
+                    assertEq(usdc.balanceOf(address(gag)), contractBalBefore + BURN_FEE);
                     break;
                 }
             } catch {
@@ -148,10 +138,7 @@ contract GigglesAndGagsFuzzTest is BaseTest {
     // =========================================================================
 
     /// @notice Fuzz: adding payment tokens with various prices/fees.
-    function testFuzz_updatePaymentToken_validParams(
-        uint256 mintPrice,
-        uint256 burnFee
-    ) public {
+    function testFuzz_updatePaymentToken_validParams(uint256 mintPrice, uint256 burnFee) public {
         mintPrice = bound(mintPrice, 1, type(uint128).max);
         burnFee = bound(burnFee, 1, type(uint128).max);
 
@@ -208,9 +195,7 @@ contract GigglesAndGagsFuzzTest is BaseTest {
         // Most random byte sequences will contain invalid characters.
         // We just verify it doesn't panic or have unexpected behaviour.
         // Use a low-level call to this contract's own wrapper to catch reverts.
-        (bool success,) = address(this).call(
-            abi.encodeWithSelector(this.externalValidateText.selector, text)
-        );
+        (bool success,) = address(this).call(abi.encodeWithSelector(this.externalValidateText.selector, text));
 
         if (success) {
             // If it passes, verify the message is actually valid.
@@ -425,11 +410,7 @@ contract GigglesAndGagsFuzzTest is BaseTest {
     }
 
     /// @notice Fuzz: combined entropy sources never prevent minting.
-    function testFuzz_submitMintIntent_fullEntropy(
-        uint256 prevrandao,
-        uint256 blockNumber,
-        uint256 timestamp
-    ) public {
+    function testFuzz_submitMintIntent_fullEntropy(uint256 prevrandao, uint256 blockNumber, uint256 timestamp) public {
         blockNumber = bound(blockNumber, 1, 1e9);
         timestamp = bound(timestamp, 1, type(uint64).max);
 

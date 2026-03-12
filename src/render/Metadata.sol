@@ -22,36 +22,31 @@ library Metadata {
      * @param text           The gag message stored for this token.
      * @return A `data:application/json;base64,...` URI suitable for `tokenURI()`.
      */
-    function buildTokenURI(
-        string memory collectionName,
-        uint256 tokenId,
-        string memory text
-    ) internal pure returns (string memory) {
+    function buildTokenURI(string memory collectionName, uint256 tokenId, string memory text)
+        internal
+        pure
+        returns (string memory)
+    {
         // Render the SVG and extract trait data in one call.
         (string memory svg, Renderer.RenderData memory data) = Renderer.renderSVG(tokenId, text);
 
         // Base64-encode the raw SVG into a data URI for the `image` field.
-        string memory image = string.concat(
-            "data:image/svg+xml;base64,",
-            Base64.encode(bytes(svg))
-        );
+        string memory image = string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(svg)));
 
         // Assemble the JSON metadata document in two halves to avoid stack-too-deep.
         string memory jsonHead = string.concat(
-            '{"name":"', collectionName, " #", _toString(tokenId), '",',
+            '{"name":"',
+            collectionName,
+            " #",
+            _toString(tokenId),
+            '",',
             '"description":"Giggles and Gags is a queue-minted on-chain gag collectible. The message and image are rendered fully on-chain.",'
         );
-        string memory json = string.concat(
-            jsonHead,
-            '"attributes":', Renderer.attributesJSON(data), ',',
-            '"image":"', image, '"}'
-        );
+        string memory json =
+            string.concat(jsonHead, '"attributes":', Renderer.attributesJSON(data), ",", '"image":"', image, '"}');
 
         // Base64-encode the JSON and wrap it in a data URI.
-        return string.concat(
-            "data:application/json;base64,",
-            Base64.encode(bytes(json))
-        );
+        return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
     }
 
     /**

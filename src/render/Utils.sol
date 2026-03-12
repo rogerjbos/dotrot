@@ -95,12 +95,12 @@ library Utils {
         uint256 outLen = 0;
         for (uint256 i = 0; i < len; i++) {
             bytes1 c = b[i];
-            if (c == 0x26)      outLen += 5; // & → &amp;
+            if (c == 0x26) outLen += 5; // & → &amp;
             else if (c == 0x22) outLen += 6; // " → &quot;
             else if (c == 0x27) outLen += 6; // ' → &apos;
             else if (c == 0x3C) outLen += 4; // < → &lt;
             else if (c == 0x3E) outLen += 4; // > → &gt;
-            else                outLen += 1;
+            else outLen += 1;
         }
 
         // Pass 2: allocate once and write.
@@ -109,15 +109,35 @@ library Utils {
         for (uint256 i = 0; i < len; i++) {
             bytes1 c = b[i];
             if (c == 0x26) {
-                out[j++] = "&"; out[j++] = "a"; out[j++] = "m"; out[j++] = "p"; out[j++] = ";";
+                out[j++] = "&";
+                out[j++] = "a";
+                out[j++] = "m";
+                out[j++] = "p";
+                out[j++] = ";";
             } else if (c == 0x22) {
-                out[j++] = "&"; out[j++] = "q"; out[j++] = "u"; out[j++] = "o"; out[j++] = "t"; out[j++] = ";";
+                out[j++] = "&";
+                out[j++] = "q";
+                out[j++] = "u";
+                out[j++] = "o";
+                out[j++] = "t";
+                out[j++] = ";";
             } else if (c == 0x27) {
-                out[j++] = "&"; out[j++] = "a"; out[j++] = "p"; out[j++] = "o"; out[j++] = "s"; out[j++] = ";";
+                out[j++] = "&";
+                out[j++] = "a";
+                out[j++] = "p";
+                out[j++] = "o";
+                out[j++] = "s";
+                out[j++] = ";";
             } else if (c == 0x3C) {
-                out[j++] = "&"; out[j++] = "l"; out[j++] = "t"; out[j++] = ";";
+                out[j++] = "&";
+                out[j++] = "l";
+                out[j++] = "t";
+                out[j++] = ";";
             } else if (c == 0x3E) {
-                out[j++] = "&"; out[j++] = "g"; out[j++] = "t"; out[j++] = ";";
+                out[j++] = "&";
+                out[j++] = "g";
+                out[j++] = "t";
+                out[j++] = ";";
             } else {
                 out[j++] = c;
             }
@@ -146,25 +166,25 @@ library Utils {
         // Allowed punctuation:
         // . , ! ? - _ : ; ' " ( ) [ ] / @ # + &
         if (
-            c == 0x2E || // .
-            c == 0x2C || // ,
-            c == 0x21 || // !
-            c == 0x3F || // ?
-            c == 0x2D || // -
-            c == 0x5F || // _
-            c == 0x3A || // :
-            c == 0x3B || // ;
-            c == 0x27 || // '
-            c == 0x22 || // "
-            c == 0x28 || // (
-            c == 0x29 || // )
-            c == 0x5B || // [
-            c == 0x5D || // ]
-            c == 0x2F || // /
-            c == 0x40 || // @
-            c == 0x23 || // #
-            c == 0x2B || // +
-            c == 0x26    // &
+            c == 0x2E // .
+                || c == 0x2C // ,
+                || c == 0x21 // !
+                || c == 0x3F // ?
+                || c == 0x2D // -
+                || c == 0x5F // _
+                || c == 0x3A // :
+                || c == 0x3B // ;
+                || c == 0x27 // '
+                || c == 0x22 // "
+                || c == 0x28 // (
+                || c == 0x29 // )
+                || c == 0x5B // [
+                || c == 0x5D // ]
+                || c == 0x2F // /
+                || c == 0x40 // @
+                || c == 0x23 // #
+                || c == 0x2B // +
+                || c == 0x26 // &
         ) {
             return true;
         }

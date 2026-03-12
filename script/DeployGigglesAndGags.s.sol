@@ -81,78 +81,78 @@ contract DeployGigglesAndGags is Script {
 
         // ----  Slot 0  ----
         // vitalik.eth — Vitalik Buterin (Ethereum creator)
-        seedRecipients[0]  = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
-        seedMsgs[0]        = "vitalik you have been gagged. no rollback for this.";
+        seedRecipients[0] = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
+        seedMsgs[0] = "vitalik you have been gagged. no rollback for this.";
 
         // ----  Slot 1  ----
         // jesse.base.eth — Jesse Pollak (Base creator, Head of Protocols @ Coinbase)
-        seedRecipients[1]  = 0x2211d1D0020DAEA8039E46Cf1367962070d77DA9;
-        seedMsgs[1]        = "jesse we built this on your chain. sorry in advance.";
+        seedRecipients[1] = 0x2211d1D0020DAEA8039E46Cf1367962070d77DA9;
+        seedMsgs[1] = "jesse we built this on your chain. sorry in advance.";
 
         // ----  Slot 2  ----
         // dwr.eth — Dan Romero (Farcaster co-founder)
-        seedRecipients[2]  = 0xD7029BDEa1c17493893AAfE29AAD69EF892B8ff2;
-        seedMsgs[2]        = "dan this is your fault. you built the social graph.";
+        seedRecipients[2] = 0xD7029BDEa1c17493893AAfE29AAD69EF892B8ff2;
+        seedMsgs[2] = "dan this is your fault. you built the social graph.";
 
         // ----  Slot 3  ----
         // balajis.eth — Balaji Srinivasan (angel investor, former a16z/Coinbase CTO)
-        seedRecipients[3]  = 0x0916C04994849c676ab2667Ce5bbDF7CcC94310a;
-        seedMsgs[3]        = "the network state just got a little more chaotic.";
+        seedRecipients[3] = 0x0916C04994849c676ab2667Ce5bbDF7CcC94310a;
+        seedMsgs[3] = "the network state just got a little more chaotic.";
 
         // ----  Slot 4  ----
         // punk6529 — genesis.punk6529.eth (legendary NFT collector)
-        seedRecipients[4]  = 0xfD22004806A6846EA67ad883356be810F0428793;
-        seedMsgs[4]        = "this one is non-transferable. not even you can move it.";
+        seedRecipients[4] = 0xfD22004806A6846EA67ad883356be810F0428793;
+        seedMsgs[4] = "this one is non-transferable. not even you can move it.";
 
         // ----  Slot 5  ----
         // dwr.eth secondary — Dan Romero verified custody address
-        seedRecipients[5]  = 0x187c7B0393eBE86378128f2653D0930E33218899;
-        seedMsgs[5]        = "gm ser. you have been permanently onchain pranked.";
+        seedRecipients[5] = 0x187c7B0393eBE86378128f2653D0930E33218899;
+        seedMsgs[5] = "gm ser. you have been permanently onchain pranked.";
 
         // ----  Slot 6  ----
         // Clanker Factory — the AI token launchpad on Base (contract)
-        seedRecipients[6]  = 0xE85A59c628F7d27878ACeB4bf3b35733630083a9;
-        seedMsgs[6]        = "dear clanker: you deploy tokens. we deploy chaos.";
+        seedRecipients[6] = 0xE85A59c628F7d27878ACeB4bf3b35733630083a9;
+        seedMsgs[6] = "dear clanker: you deploy tokens. we deploy chaos.";
 
         // ----  Slot 7  ----
         // zora-base.eth — Zora protocol (NFT infrastructure on Base)
-        seedRecipients[7]  = 0xA10164b85f22eb1086602D8Ed0F2e2a6473d2980;
-        seedMsgs[7]        = "zora mints art. we mint damage. different vibes.";
+        seedRecipients[7] = 0xA10164b85f22eb1086602D8Ed0F2e2a6473d2980;
+        seedMsgs[7] = "zora mints art. we mint damage. different vibes.";
 
         // ----  Slot 8  ----
         // Zora Deployer — official Zora deployer wallet
-        seedRecipients[8]  = 0x7A6f726121030CaDf9923333d5b6F29277024027;
-        seedMsgs[8]        = "your wallet will never be the same. you are welcome.";
+        seedRecipients[8] = 0x7A6f726121030CaDf9923333d5b6F29277024027;
+        seedMsgs[8] = "your wallet will never be the same. you are welcome.";
 
         // ----  Slot 9  ----
         // social.6529.eth — punk6529 social wallet
-        seedRecipients[9]  = 0x6DAA633C23615a29471dEaFae351727867E7dAD1;
-        seedMsgs[9]        = "collecting this one is not optional. it collected you.";
+        seedRecipients[9] = 0x6DAA633C23615a29471dEaFae351727867E7dAD1;
+        seedMsgs[9] = "collecting this one is not optional. it collected you.";
 
         // ----  Slot 10 ----
         // dcbuilder.eth — notable Ethereum dev / Worldcoin research engineer
         seedRecipients[10] = 0x642C7F7040C656d633A9267284B338FF41051541;
-        seedMsgs[10]       = "devpill.me didn't prepare you for this one ser.";
+        seedMsgs[10] = "devpill.me didn't prepare you for this one ser.";
 
         // ----  Slot 11 ----
         // ser.base.eth — popular Base community name
         seedRecipients[11] = 0x9F59Fa05A4aD952Ba90b101555fB5E2709C9d8bB;
-        seedMsgs[11]       = "ser this is not a drill. this is permanent.";
+        seedMsgs[11] = "ser this is not a drill. this is permanent.";
 
         // ----  Slot 12 ----
         // Base bridge contract — technically an address, meme target
         seedRecipients[12] = 0x849151d7D0bF1F34b70d5caD5149D28CC2308bf1;
-        seedMsgs[12]       = "you bridged to Base. Base gagged you back.";
+        seedMsgs[12] = "you bridged to Base. Base gagged you back.";
 
         // ----  Slot 13 ----
         // Coinbase attestation service signer on Base
         seedRecipients[13] = 0xe1C5CF1E30251cd4342467eb8C332613f7E6AEB1;
-        seedMsgs[13]       = "on-chain social damage. fully verified. no take-backs.";
+        seedMsgs[13] = "on-chain social damage. fully verified. no take-backs.";
 
         // ----  Slot 14 ----
         // vitalik.eth again — double gag for maximum chaos
         seedRecipients[14] = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
-        seedMsgs[14]       = "two gags. one wallet. zero remorse. welcome to GaG.";
+        seedMsgs[14] = "two gags. one wallet. zero remorse. welcome to GaG.";
 
         // -----------------------------------------------------------------
         //  Deploy Step 1 — Renderer
@@ -186,7 +186,7 @@ contract DeployGigglesAndGags is Script {
         //  crvUSD  0x417Ac0e078398C154EdFadD9Ef675d30Be60AF93   18       1e18       2e18
 
         // USDC (Circle native)
-        gag.updatePaymentToken(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, 1e6,  2e6);
+        gag.updatePaymentToken(0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913, 1e6, 2e6);
         // USDS (Sky / MakerDAO)
         gag.updatePaymentToken(0x820C137fa70C8691f0e44Dc420a5e53c168921Dc, 1e18, 2e18);
         // USDe (Ethena)

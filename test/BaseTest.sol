@@ -19,8 +19,8 @@ abstract contract BaseTest is Test {
     address public carol = makeAddr("carol");
     address public treasury = makeAddr("treasury");
 
-    uint256 public constant MINT_PRICE = 1e6;   // 1 USDC (6 decimals)
-    uint256 public constant BURN_FEE = 0.5e6;   // 0.5 USDC
+    uint256 public constant MINT_PRICE = 1e6; // 1 USDC (6 decimals)
+    uint256 public constant BURN_FEE = 0.5e6; // 0.5 USDC
     uint256 public constant DAI_MINT_PRICE = 1e18; // 1 DAI (18 decimals)
     uint256 public constant DAI_BURN_FEE = 0.5e18; // 0.5 DAI
     uint8 public constant QUEUE_SIZE = 15;

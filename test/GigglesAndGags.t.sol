@@ -13,7 +13,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 /// @title GigglesAndGagsTest
 /// @notice Comprehensive unit tests for the GigglesAndGags contract.
 contract GigglesAndGagsTest is BaseTest {
-
     // =========================================================================
     //  Constructor / Deployment
     // =========================================================================
@@ -220,7 +219,7 @@ contract GigglesAndGagsTest is BaseTest {
 
     function test_submitMintIntent_revertsOnInvalidCharacter() public {
         vm.prank(alice);
-        vm.expectRevert();  // InvalidCharacter with params
+        vm.expectRevert(); // InvalidCharacter with params
         gag.submitMintIntent(false, bob, address(usdc), "hello\x01world");
     }
 

@@ -19,11 +19,11 @@ contract GagRenderer {
      * @param text           The gag message stored for this token.
      * @return A `data:application/json;base64,...` URI.
      */
-    function buildTokenURI(
-        string calldata collectionName,
-        uint256 tokenId,
-        string calldata text
-    ) external pure returns (string memory) {
+    function buildTokenURI(string calldata collectionName, uint256 tokenId, string calldata text)
+        external
+        pure
+        returns (string memory)
+    {
         return Metadata.buildTokenURI(collectionName, tokenId, text);
     }
 }

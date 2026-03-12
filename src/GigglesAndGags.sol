@@ -53,37 +53,37 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
     uint256 public burnFeeOriginShare;
 
     /// @notice Whether a given ERC-20 address is currently accepted for payments.
-    mapping (address erc20 => bool supported) public supportedToken;
+    mapping(address erc20 => bool supported) public supportedToken;
 
     /// @notice Mint price denominated in each supported ERC-20 token.
-    mapping (address erc20 => uint256 price) public mintPrices;
+    mapping(address erc20 => uint256 price) public mintPrices;
 
     /// @notice Burn fee denominated in each supported ERC-20 token.
-    mapping (address erc20 => uint256 burnPrice) public burnFees;
+    mapping(address erc20 => uint256 burnPrice) public burnFees;
 
     /**
      * @notice The fixed-size slot buffer of pending mint intents, indexed 0 .. `queueSize - 1`.
      * @dev This is **not** a FIFO queue. Slots are selected pseudo-randomly and overwritten.
      */
-    mapping (uint8 index => MintIntent intent) public mintingQueue;
+    mapping(uint8 index => MintIntent intent) public mintingQueue;
 
     /// @dev Maps each minted `tokenId` to its on-chain gag message.
-    mapping (uint256 tokenId => string message) internal tokenMessages;
+    mapping(uint256 tokenId => string message) internal tokenMessages;
 
     /**
      * @dev Maps each minted `tokenId` to its attributable origin address.
      *      `address(0)` means the minter chose to remain anonymous.
      */
-    mapping (uint256 tokenId => address origin) internal tokenOrigin;
+    mapping(uint256 tokenId => address origin) internal tokenOrigin;
 
     /// @dev Tracks claimable burn-fee rewards per origin per ERC-20 token.
-    mapping (address recipient => mapping (address token => uint256 fees)) internal earnedFees;
+    mapping(address recipient => mapping(address token => uint256 fees)) internal earnedFees;
 
     /**
      * @dev Tracks accumulated project treasury fees per ERC-20 token.
      *      Owner withdrawals via `withdrawFees` must only draw from this balance.
      */
-    mapping (address token => uint256 fees) internal projectFees;
+    mapping(address token => uint256 fees) internal projectFees;
 
     // -------------------------------------------------------------------------
     //  Constructor
@@ -103,20 +103,19 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
         address rendererAddress,
         address[] memory seedRecipients,
         string[] memory seedMessages
-    )
-        ERC721("Giggles and Gags", "GaG")
-        Ownable(initialOwner)
-    {
+    ) ERC721("Giggles and Gags", "GaG") Ownable(initialOwner) {
         if (rendererAddress == address(0)) revert InvalidRecipient();
         renderer = IGagRenderer(rendererAddress);
         queueSize = 15;
         burnFeeOriginShare = 7500;
 
         // Both seed arrays must match `queueSize` exactly.
-        if(seedRecipients.length != seedMessages.length || seedRecipients.length != queueSize) revert IncorrectSeedSize();
-        for(uint8 i; i < queueSize; ){
+        if (seedRecipients.length != seedMessages.length || seedRecipients.length != queueSize) {
+            revert IncorrectSeedSize();
+        }
+        for (uint8 i; i < queueSize;) {
             // Validate seed messages against the same rules as user submissions.
-            if(seedRecipients[i] == address(0)) revert InvalidRecipient();
+            if (seedRecipients[i] == address(0)) revert InvalidRecipient();
             Utils.validateText(seedMessages[i]);
 
             // Seed intents are always anonymous (origin = address(0)).
@@ -180,14 +179,12 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param paymentToken Address of the ERC-20 stablecoin used to pay the mint price.
      * @param message      The gag message (1–64 ASCII chars, validated by `Utils.validateText`).
      */
-    function submitMintIntent(
-        bool anonymize,
-        address recipient,
-        address paymentToken,
-        string memory message
-    ) public whenNotPaused {
-        if(!supportedToken[paymentToken]) revert UnsupportedToken();
-        if(recipient == address(0)) revert InvalidRecipient();
+    function submitMintIntent(bool anonymize, address recipient, address paymentToken, string memory message)
+        public
+        whenNotPaused
+    {
+        if (!supportedToken[paymentToken]) revert UnsupportedToken();
+        if (recipient == address(0)) revert InvalidRecipient();
 
         Utils.validateText(message);
 
@@ -211,16 +208,13 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param tokenId      The token to burn. Caller must be the current owner.
      * @param paymentToken Address of the ERC-20 used to pay the burn fee.
      */
-    function burnToken(
-        uint256 tokenId,
-        address paymentToken
-    ) public {
-        if(ownerOf(tokenId) != msg.sender) revert NotTokenOwner();
-        if(!supportedToken[paymentToken]) revert UnsupportedToken();
+    function burnToken(uint256 tokenId, address paymentToken) public {
+        if (ownerOf(tokenId) != msg.sender) revert NotTokenOwner();
+        if (!supportedToken[paymentToken]) revert UnsupportedToken();
         _pullPayment(paymentToken, burnFees[paymentToken]);
 
         // Split the burn fee between origin and project treasury.
-        if(tokenOrigin[tokenId] != address(0)) {
+        if (tokenOrigin[tokenId] != address(0)) {
             // Attributable origin gets their share; project gets the residual.
             uint256 originFee = burnFees[paymentToken] * burnFeeOriginShare / MAX_BPTS;
             earnedFees[tokenOrigin[tokenId]][paymentToken] += originFee;
@@ -241,7 +235,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param token The ERC-20 address to claim.
      */
     function claimFees(address token) public {
-        if(earnedFees[msg.sender][token] == 0) revert NoFees();
+        if (earnedFees[msg.sender][token] == 0) revert NoFees();
 
         uint256 fee = earnedFees[msg.sender][token];
         earnedFees[msg.sender][token] = 0;
@@ -291,11 +285,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param mintingPrice The price (in `token` units) to submit a mint intent.
      * @param burningFee   The fee (in `token` units) to burn a token.
      */
-    function updatePaymentToken(
-        address token,
-        uint256 mintingPrice,
-        uint256 burningFee
-    ) public onlyOwner {
+    function updatePaymentToken(address token, uint256 mintingPrice, uint256 burningFee) public onlyOwner {
         if (token == address(0)) revert InvalidTokenAddress();
         if (mintingPrice == 0) revert InvalidMintingPrice();
         if (burningFee == 0) revert InvalidBurningFee();
@@ -317,12 +307,12 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      *      because `earnedFees` and `projectFees` balances are not affected.
      */
     function removePaymentToken(address token) public onlyOwner {
-        if(!supportedToken[token]) revert UnsupportedToken();
+        if (!supportedToken[token]) revert UnsupportedToken();
 
         supportedToken[token] = false;
         // Swap-and-pop removal to keep the array compact.
-        for(uint256 i; i < supportedTokens.length; ) {
-            if(supportedTokens[i] == token) {
+        for (uint256 i; i < supportedTokens.length;) {
+            if (supportedTokens[i] == token) {
                 supportedTokens[i] = supportedTokens[supportedTokens.length - 1];
                 supportedTokens.pop();
 
@@ -346,7 +336,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param newBurnFeeOriginShare The new share in bps.
      */
     function updateBurnFeeOriginShare(uint256 newBurnFeeOriginShare) public onlyOwner {
-        if(newBurnFeeOriginShare > MAX_BPTS) revert IncorrectShare();
+        if (newBurnFeeOriginShare > MAX_BPTS) revert IncorrectShare();
 
         uint256 previousBurnFeeOriginShare = burnFeeOriginShare;
         burnFeeOriginShare = newBurnFeeOriginShare;
@@ -362,11 +352,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param recipient Where to send the withdrawn fees.
      * @param amount    Amount to withdraw, or 0 for the full balance.
      */
-    function withdrawFees(
-        address token,
-        address recipient,
-        uint256 amount
-    ) public onlyOwner {
+    function withdrawFees(address token, address recipient, uint256 amount) public onlyOwner {
         if (token == address(0)) revert UnsupportedToken();
         if (recipient == address(0)) revert InvalidRecipient();
         if (amount > projectFees[token]) revert InsufficientFees();
@@ -392,10 +378,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param token  The ERC-20 address.
      * @param amount The amount to pull.
      */
-    function _pullPayment(
-        address token,
-        uint256 amount
-    ) internal {
+    function _pullPayment(address token, uint256 amount) internal {
         if (!supportedToken[token]) revert UnsupportedToken();
         if (amount == 0) revert InvalidAmount();
 
@@ -406,7 +389,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @dev Compute a pseudo-random slot index in [0, queueSize) using weak on-chain entropy.
      *      Intentionally non-secure; the chaos is a feature, not a bug.
      */
-    function _calculateMintIntentIndex(address paymentToken) internal view returns (uint8){
+    function _calculateMintIntentIndex(address paymentToken) internal view returns (uint8) {
         return uint8(
             uint256(
                 keccak256(
@@ -453,12 +436,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      * @param origin    The attributable origin, or `address(0)` for anonymous.
      * @param text      The validated gag message.
      */
-    function _placeIntoQueue(
-        uint8 index,
-        address recipient,
-        address origin,
-        string memory text
-    ) internal {
+    function _placeIntoQueue(uint8 index, address recipient, address origin, string memory text) internal {
         mintingQueue[index] = MintIntent(recipient, origin, text);
     }
 
@@ -469,7 +447,7 @@ contract GigglesAndGags is ERC721, ERC721Pausable, Ownable, GigglesAndGagsStruct
      *      no pending intents are stranded when the contract is paused.
      */
     function _flushQueue() internal {
-        for (uint8 i; i < queueSize; ) {
+        for (uint8 i; i < queueSize;) {
             MintIntent memory intent = mintingQueue[i];
             if (intent.recipient == address(0)) {
                 ++i;
