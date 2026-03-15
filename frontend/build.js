@@ -26,6 +26,7 @@ const OUT_DIR = process.argv.includes("--out")
   : DEFAULT_OUT;
 
 const SITE_URL = "https://gigglesandgags.eth.limo";
+const MINIAPP_URL = "https://gag-blue-iota.vercel.app"; // Vercel host for mini app (no CSP frame-ancestors restriction)
 const ENS_NAME = "gigglesandgags.eth";
 
 // Assets to copy verbatim
@@ -117,6 +118,8 @@ function buildMetaTags(route, routeConfig) {
   const imageUrl = `${SITE_URL}/${routeConfig.ogImage}`;
 
   // Farcaster frame embed meta (Mini App launch action)
+  // URL points to Vercel host to avoid eth.limo CSP frame-ancestors restriction
+  const miniAppLaunchUrl = route === "/" ? MINIAPP_URL : `${MINIAPP_URL}${route}`;
   const fcFrameJson = JSON.stringify({
     version: "next",
     imageUrl: imageUrl,
@@ -125,7 +128,7 @@ function buildMetaTags(route, routeConfig) {
       action: {
         type: "launch_frame",
         name: "Giggles and Gags",
-        url: canonicalUrl,
+        url: miniAppLaunchUrl,
         splashImageUrl: `${SITE_URL}/og/default.png`,
         splashBackgroundColor: "#07080c",
       },
@@ -243,7 +246,7 @@ function buildFarcasterManifest() {
         version: "1",
         name: "Giggles and Gags",
         iconUrl: `${SITE_URL}/og/icon-1024.png`,
-        homeUrl: SITE_URL,
+        homeUrl: MINIAPP_URL,
         imageUrl: `${SITE_URL}/og/default.png`,
         buttonTitle: "Unleash Chaos",
         splashImageUrl: `${SITE_URL}/og/splash-200.png`,
