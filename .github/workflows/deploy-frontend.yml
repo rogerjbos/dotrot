@@ -45,9 +45,13 @@ jobs:
           path: dist
           key: build-${{ steps.source-hash.outputs.hash }}
 
+      - name: Install frontend dependencies
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: cd frontend && npm ci
+
       - name: Build frontend
         if: steps.cache-build.outputs.cache-hit != 'true'
-        run: node frontend/build.js
+        run: cd frontend && npm run build
 
       - name: Download ethers.js UMD bundle
         if: steps.cache-build.outputs.cache-hit != 'true'
