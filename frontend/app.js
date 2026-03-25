@@ -1,11 +1,11 @@
 /**
- * DotRot — Frontend Application (Polkadot Asset Hub Edition)
+ * GaG — Frontend Application (Polkadot Asset Hub Edition)
  *
  * Pure client-side logic. Connects via Product SDK (Spektr),
  * interacts with the EVM contract through polkadot-api Revive API.
  */
 
-/* global GAG_CONFIG, GAG_ABI, DotRotWallet */
+/* global GAG_CONFIG, GAG_ABI, GaGWallet */
 
 // ---------------------------------------------------------------------------
 //  State
@@ -23,11 +23,11 @@ let resolveDebounce = null;
 //  Contract helpers
 // ---------------------------------------------------------------------------
 async function contractRead(functionName, args = []) {
-  return DotRotWallet.readContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args);
+  return GaGWallet.readContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args);
 }
 
 async function contractWrite(functionName, args = [], value = 0n) {
-  return DotRotWallet.writeContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args, value);
+  return GaGWallet.writeContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args, value);
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +129,7 @@ async function loadGagPage() {
 
   const tokenId = BigInt(tokenIdStr);
   idBadge.textContent = "#" + tokenIdStr;
-  document.title = `DotRot #${tokenIdStr}`;
+  document.title = `GaG #${tokenIdStr}`;
 
   if (!walletConnected) {
     svgContainer.innerHTML = '<div class="preview-placeholder">Connecting to Asset Hub...</div>';
@@ -205,7 +205,7 @@ async function loadGagPage() {
 
 function bindGagPageShare(tokenIdStr) {
   const gagUrl = `${GAG_CONFIG.siteUrl}/gag/?id=${tokenIdStr}`;
-  const shareText = `Check out DotRot #${tokenIdStr} — randomly assigned on-chain social damage on Polkadot. ${gagUrl}`;
+  const shareText = `Check out GaG #${tokenIdStr} — randomly assigned on-chain social damage on Polkadot. ${gagUrl}`;
 
   const xBtn = document.getElementById("btn-share-gag-x");
   const copyBtn = document.getElementById("btn-share-gag-copy");
@@ -300,7 +300,7 @@ function bindUI() {
 // ---------------------------------------------------------------------------
 async function connectWallet() {
   try {
-    const result = await DotRotWallet.connectWallet();
+    const result = await GaGWallet.connectWallet();
     userAddress = result.substrateAddress;
     userH160 = result.h160Address;
     walletConnected = true;
@@ -323,7 +323,7 @@ async function connectWallet() {
     ]);
 
     // Watch for account changes
-    DotRotWallet.onAccountStatusChange(async (status) => {
+    GaGWallet.onAccountStatusChange(async (status) => {
       if (status === "disconnected") {
         window.location.reload();
       }
@@ -427,7 +427,7 @@ function onRecipientInput() {
 
   resolveDebounce = setTimeout(async () => {
     try {
-      const result = await DotRotWallet.resolveAddress(val);
+      const result = await GaGWallet.resolveAddress(val);
       // Check input hasn't changed
       if (document.getElementById("recipient").value.trim() !== val) return;
 
@@ -782,7 +782,7 @@ function updatePreviewSVG(text) {
     <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;">
       <rect width="400" height="400" fill="${bg}" />
       <rect x="15" y="15" width="370" height="370" rx="8" fill="none" stroke="${accent}" stroke-width="2" opacity="0.5" />
-      <text x="200" y="55" text-anchor="middle" fill="${accent}" font-size="11" font-family="monospace" opacity="0.7">DOTROT</text>
+      <text x="200" y="55" text-anchor="middle" fill="${accent}" font-size="11" font-family="monospace" opacity="0.7">GAG</text>
       ${textNode}
       <text x="200" y="360" text-anchor="middle" fill="#888" font-size="9" font-family="monospace">randomly assigned chaos</text>
       ${rareMode ? '<text x="350" y="55" text-anchor="end" fill="#ff00ff" font-size="9" font-family="monospace">RARE</text>' : ''}
@@ -862,7 +862,7 @@ function showToast(message, type = "info", duration = 4500) {
 // ---------------------------------------------------------------------------
 function buildShareText() {
   const site = GAG_CONFIG.siteUrl || window.location.href;
-  return `I just loaded the chaos buffer on DotRot — on-chain social damage on Polkadot Asset Hub. Send a cursed soulbound NFT to your friends (or enemies). ${site}`;
+  return `I just loaded the chaos buffer on GaG — on-chain social damage on Polkadot Asset Hub. Send a cursed soulbound NFT to your friends (or enemies). ${site}`;
 }
 
 function shareOnX() {
@@ -896,7 +896,7 @@ async function pollLiveStats() {
         mintedEl.textContent = total.toString();
       }
       if (balanceEl && userAddress) {
-        const balance = await DotRotWallet.getBalance(userAddress);
+        const balance = await GaGWallet.getBalance(userAddress);
         // Balance is in Substrate 10-decimal units
         const pas = Number(balance) / 1e10;
         balanceEl.textContent = pas.toFixed(2) + " PAS";

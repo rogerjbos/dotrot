@@ -1,9 +1,9 @@
 /**
- * DotRot — Frontend Configuration (Polkadot Asset Hub Edition)
+ * GaG — Frontend Configuration (Polkadot Asset Hub Edition)
  */
 const GAG_CONFIG = {
   // ---- Contract ----
-  contractAddress: "0x28e3D06239859260688F87C0FF183DB1aFbC2351",
+  contractAddress: "0x5D10ec9754FEa170B376fCfEb370f5f94aa6d6A1",
   chainId: 420420417, // Paseo Asset Hub testnet
   chainName: "Paseo Asset Hub",
   rpcUrl: "https://eth-rpc-testnet.polkadot.io/",
@@ -17,14 +17,14 @@ const GAG_CONFIG = {
   },
 
   // ---- Site ----
-  siteUrl: "https://dotrot.dot.li",
+  siteUrl: "https://gag.dot.li",
 
   // ---- IPFS gateway for fetching metadata ----
   ipfsGateway: "https://paseo-ipfs.polkadot.io/ipfs/",
 
   // ---- Social ----
-  xProfile: "https://x.com/DotRot",
-  githubRepo: "https://github.com/rogerjbos/dotrot",
+  xProfile: "https://x.com/GaG",
+  githubRepo: "https://github.com/rogerjbos/gag",
 
   // ---- Contract deploy block (used to scope event queries) ----
   deployBlock: 0,

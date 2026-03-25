@@ -1,6 +1,6 @@
-# DotRot — Frontend
+# GaG — Frontend
 
-Static frontend for the DotRot on-chain prank NFT collection on Polkadot Asset Hub.
+Static frontend for the GaG on-chain prank NFT collection on Polkadot Asset Hub.
 
 ## Stack
 
@@ -46,7 +46,7 @@ curl -O https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js
 
 ## Deployment
 
-Upload `dist/` to Bulletin TransactionStorage via `dotns bulletin upload` and set the contenthash on `dotrot.dot.li`.
+Upload `dist/` to Bulletin TransactionStorage via `dotns bulletin upload` and set the contenthash on `gag.dot.li`.
 
 ## Wallet Support
 

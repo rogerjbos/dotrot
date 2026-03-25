@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * DotRot — Static Build Script
+ * GaG — Static Build Script
  *
  * Generates a multi-page static site from the single-page source.
  * Each route gets its own index.html with route-specific meta tags,
@@ -25,8 +25,8 @@ const OUT_DIR = process.argv.includes("--out")
   ? path.resolve(process.argv[process.argv.indexOf("--out") + 1])
   : DEFAULT_OUT;
 
-const SITE_URL = "https://dotrot.dot.li";
-const DOMAIN_NAME = "dotrot.dot.li";
+const SITE_URL = "https://gag.dot.li";
+const DOMAIN_NAME = "gag.dot.li";
 
 // Assets to copy verbatim
 const COPY_FILES = ["app.js", "config.js", "abi.js", "style.css", "favicon.svg"];
@@ -38,7 +38,7 @@ const WALLET_BUNDLE = path.join(__dirname, "dist-bundle", "wallet-bundle.js");
 const ROUTES = {
   "/": {
     page: "home",
-    title: "DotRot — Send a cursed onchain message",
+    title: "GaG — Send a cursed onchain message",
     description:
       "A non-transferable prank NFT powered by PAS tokens and randomly assigned chaos. On Polkadot.",
     ogImage: "og/default.png",
@@ -46,7 +46,7 @@ const ROUTES = {
   },
   "/send": {
     page: "send",
-    title: "Send a Gag — DotRot",
+    title: "Send a Gag — GaG",
     description:
       "Fund the chaos buffer. Your gag may mint later. Someone else's may mint now.",
     ogImage: "og/default.png",
@@ -55,7 +55,7 @@ const ROUTES = {
   },
   "/burn": {
     page: "burn",
-    title: "Burn a Gag — DotRot",
+    title: "Burn a Gag — GaG",
     description:
       "Got pranked? Pay the burn fee to remove a non-transferable gag from your wallet.",
     ogImage: "og/default.png",
@@ -64,7 +64,7 @@ const ROUTES = {
   },
   "/claim": {
     page: "claim",
-    title: "Claim Burn Tribute — DotRot",
+    title: "Claim Burn Tribute — GaG",
     description:
       "If your attributable gag got burned, collect your cut of the burn fee.",
     ogImage: "og/default.png",
@@ -73,7 +73,7 @@ const ROUTES = {
   },
   "/how": {
     page: "how",
-    title: "How DotRot Works",
+    title: "How GaG Works",
     description:
       "This is not a normal queue. It is a fixed-size chaos buffer for wallet-to-wallet onchain gags.",
     ogImage: "og/default.png",
@@ -82,7 +82,7 @@ const ROUTES = {
   },
   "/gag": {
     page: "gag",
-    title: "DotRot — Token",
+    title: "GaG — Token",
     description:
       "Randomly assigned chaos, permanently attached until someone pays to burn it.",
     ogImage: "og/default.png",
@@ -103,7 +103,7 @@ function generateOGImage() {
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect x="30" y="30" width="1140" height="570" rx="16" fill="none" stroke="#ffcc00" stroke-width="2" opacity="0.3"/>
-  <text x="600" y="240" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="72" font-weight="800">DotRot</text>
+  <text x="600" y="240" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="72" font-weight="800">GaG</text>
   <text x="600" y="310" text-anchor="middle" fill="#888" font-family="monospace" font-size="24">on-chain social damage on Polkadot</text>
   <text x="600" y="380" text-anchor="middle" fill="#555" font-family="monospace" font-size="18">non-transferable prank NFTs · PAS powered · slot buffer chaos</text>
   <text x="600" y="560" text-anchor="middle" fill="#333" font-family="monospace" font-size="14">${DOMAIN_NAME}</text>
@@ -130,7 +130,7 @@ function buildMetaTags(route, routeConfig) {
   <meta property="og:image" content="${imageUrl}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:site_name" content="DotRot" />
+  <meta property="og:site_name" content="GaG" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -225,7 +225,7 @@ function generateIcon512() {
 function generateSplash200() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
   <rect width="200" height="200" fill="#07080c"/>
-  <text x="100" y="90" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="36" font-weight="800">DotRot</text>
+  <text x="100" y="90" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="36" font-weight="800">GaG</text>
   <text x="100" y="130" text-anchor="middle" fill="#555" font-family="monospace" font-size="12">on-chain social damage</text>
 </svg>`;
 }

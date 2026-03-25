@@ -1,5 +1,5 @@
 /**
- * DotRot Wallet + Contract Module — Triangle Only
+ * GaG Wallet + Contract Module — Triangle Only
  *
  * Connects via Product SDK (Spektr), interacts with the EVM contract
  * through polkadot-api's Revive API. No derived keys, no MetaMask.
@@ -314,7 +314,7 @@ export async function connectWallet() {
 
   _enableFactory = await createNonProductExtensionEnableFactory(sandboxTransport);
   if (!_enableFactory) {
-    throw new Error("Not running inside the Host — open this page at dotrot.dot.li");
+    throw new Error("Not running inside the Host — open this page at gag.dot.li");
   }
 
   _accountsProvider = createAccountsProvider(sandboxTransport);

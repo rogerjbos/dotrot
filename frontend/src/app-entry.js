@@ -1,7 +1,7 @@
 /**
- * DotRot — App Entry Point
+ * GaG — App Entry Point
  *
- * Bundles the wallet + contract module and exposes it as window.DotRotWallet
+ * Bundles the wallet + contract module and exposes it as window.GaGWallet
  * for the vanilla app.js to consume.
  */
 
@@ -16,7 +16,7 @@ import {
   resolveUsername,
 } from "./wallet.js";
 
-window.DotRotWallet = {
+window.GaGWallet = {
   connectWallet,
   readContract,
   writeContract,
@@ -27,4 +27,4 @@ window.DotRotWallet = {
   resolveUsername,
 };
 
-window.dispatchEvent(new Event("dotrot-wallet-ready"));
+window.dispatchEvent(new Event("gag-wallet-ready"));

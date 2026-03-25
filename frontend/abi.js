@@ -1,5 +1,5 @@
 /**
- * DotRot — Contract ABI (viem JSON format for Revive API encoding)
+ * GaG — Contract ABI (viem JSON format for Revive API encoding)
  */
 const GAG_ABI = [
   { type: "function", name: "name", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
