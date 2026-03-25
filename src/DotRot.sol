@@ -183,11 +183,7 @@ contract DotRot is ERC721, ERC721Pausable, Ownable, DotRotStructs {
      * @param recipient Address that will receive the NFT when this intent is eventually minted.
      * @param message   The gag message (1–64 ASCII chars, validated by `Utils.validateText`).
      */
-    function submitMintIntent(bool anonymize, address recipient, string memory message)
-        public
-        payable
-        whenNotPaused
-    {
+    function submitMintIntent(bool anonymize, address recipient, string memory message) public payable whenNotPaused {
         if (msg.value < mintPrice) revert InsufficientPayment();
         if (recipient == address(0)) revert InvalidRecipient();
 
@@ -373,12 +369,7 @@ contract DotRot is ERC721, ERC721Pausable, Ownable, DotRotStructs {
             uint256(
                 keccak256(
                     abi.encodePacked(
-                        block.prevrandao,
-                        block.number,
-                        block.timestamp,
-                        totalMinted,
-                        projectFees,
-                        msg.sender
+                        block.prevrandao, block.number, block.timestamp, totalMinted, projectFees, msg.sender
                     )
                 )
             ) % queueSize
