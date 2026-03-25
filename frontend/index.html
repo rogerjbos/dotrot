@@ -100,12 +100,11 @@
       <h1 class="hero-title">
         <span class="glitch" data-text="Dot">Dot</span><span class="glitch" data-text="Rot">Rot</span>
       </h1>
-      <p class="hero-tagline">Send a cursed on-chain message. Let the slot machine decide who gets minted next.</p>
+      <p class="hero-tagline">Send a permanent on-chain message to any wallet. They can't delete it unless they pay.</p>
       <p class="hero-sub">
-        A non-transferable prank NFT powered by PAS tokens and poor decisions.
-        You submit a message, fund the mischief, and the contract mints whatever
-        previous message gets picked from the live slot buffer.
-        Your target can't transfer it away. They can only burn it by paying.
+        DotRot lets you send soulbound (non-transferable) NFT messages to anyone on Polkadot Asset Hub.
+        Each message costs 1 PAS. Recipients can only remove it by paying 2 PAS.
+        If you take credit for your message, you earn a cut when they burn it.
       </p>
       <div class="hero-ctas">
         <a href="#mint" class="btn btn-primary btn-lg pulse-glow">Send a Gag</a>
@@ -130,37 +129,37 @@
   <!-- ============================================================ -->
   <section id="how-it-works">
     <div class="container">
-      <h2 class="section-title">How This Cursed Thing Works</h2>
+      <h2 class="section-title">How It Works</h2>
       <div class="steps-grid">
         <div class="step-card fade-in">
           <span class="step-num">01</span>
           <span class="step-icon">&#x270D;</span>
-          <h3>You write the message</h3>
-          <p>Pick a victim, write a short message, pay with PAS, and decide whether you want attribution or ghost mode.</p>
+          <h3>Write a message</h3>
+          <p>Choose a recipient (wallet address, SS58, or People Chain username like rogerjbos.39) and write a short message (up to 64 characters).</p>
         </div>
         <div class="step-card fade-in">
           <span class="step-num">02</span>
           <span class="step-icon">&#x1F4B8;</span>
-          <h3>The contract pulls payment</h3>
-          <p>You approve the exact token amount and fund the chaos. No backend, no operator intervention, no polite society.</p>
+          <h3>Pay 1 PAS</h3>
+          <p>Your payment goes directly to the smart contract. No middleman, no backend, no approvals needed — just one transaction.</p>
         </div>
         <div class="step-card fade-in">
           <span class="step-num">03</span>
           <span class="step-icon">&#x1F3B0;</span>
-          <h3>The slot buffer fires</h3>
-          <p>Your submit randomly hits one of the 15 live slots. If an old gag is sitting there, that one gets minted now.</p>
+          <h3>The slot machine picks</h3>
+          <p>The contract has 15 message slots. Your submission randomly picks a slot — whatever message was stored there gets minted as an NFT to its recipient right now.</p>
         </div>
         <div class="step-card fade-in">
           <span class="step-num">04</span>
-          <span class="step-icon">&#x1F525;</span>
-          <h3>Your gag takes its place</h3>
-          <p>Your message replaces that slot and waits for some future degen to trigger it. The cycle continues.</p>
+          <span class="step-icon">&#x1F4E9;</span>
+          <h3>Your message waits its turn</h3>
+          <p>Your message takes the empty slot. It will be minted when a future user triggers that same slot. You don't know when — that's the chaos.</p>
         </div>
       </div>
       <div class="info-callout">
-        This is <strong>not</strong> a normal mint queue.
-        It is a fixed-size chaotic slot buffer.
-        Your submit can cause someone else's stored gag to mint, and your own gag may mint later — or never.
+        <strong>The twist:</strong> you don't mint your own message. You trigger someone else's.
+        And someone else will eventually trigger yours.
+        The recipient gets a soulbound NFT they can't transfer — only burn for 2 PAS.
       </div>
     </div>
   </section>
@@ -170,7 +169,7 @@
   <!-- ============================================================ -->
   <section id="mint">
     <div class="container">
-      <h2 class="section-title">Load the Chaos Buffer</h2>
+      <h2 class="section-title">Send a Message</h2>
 
       <div class="mint-layout">
         <!-- FORM -->
@@ -197,27 +196,20 @@
             <span id="message-err" class="field-err"></span>
             <span class="field-hint">ASCII letters, numbers, and basic punctuation only. No leading/trailing/double spaces.</span>
 
-            <!-- Token selector -->
-            <label>Payment</label>
-            <div class="token-select-row">
-              <span class="token-label" id="mint-price">-- PAS</span>
-              <!-- native token — no dropdown needed -->
-                <option value="" disabled selected>Loading tokens...</option>
-              </select>
-            </div>
+            <!-- Pricing -->
             <div class="price-row">
-              <span>Mint price: <strong id="mint-price">--</strong></span>
-              <span>Burn fee: <strong id="burn-fee">--</strong></span>
+              <span>Cost to send: <strong id="mint-price">1 PAS</strong></span>
+              <span>Cost to burn: <strong id="burn-fee">2 PAS</strong></span>
             </div>
 
             <!-- Attribution toggle -->
-            <label>Attribution Mode</label>
+            <label>Who sent this?</label>
             <div class="toggle-group">
               <button type="button" id="btn-ghost" class="toggle-btn active" data-mode="ghost">
-                Ghost Mode<br /><small>No tracking, no future rewards</small>
+                Anonymous<br /><small>Recipient won't know who sent it</small>
               </button>
               <button type="button" id="btn-credit" class="toggle-btn" data-mode="credit">
-                Credit Goblin<br /><small>Earn part of future burn fees</small>
+                Take Credit<br /><small>You're identified + earn 75% if they burn it</small>
               </button>
             </div>
 
@@ -228,8 +220,8 @@
             </div>
 
             <p class="form-hint">
-              Approval grants the contract permission to pull the exact mint price — no unlimited approvals.
-              Enter the recipient's Ethereum-compatible address (0x...).
+              You can enter a 0x address, Substrate SS58 address, People Chain username (e.g. rogerjbos.39), or a DotNS name.
+              Payment is in PAS tokens — no approval step needed.
             </p>
           </form>
 
@@ -277,23 +269,21 @@
   <!-- ============================================================ -->
   <section id="burn-info">
     <div class="container">
-      <h2 class="section-title">Escape Hatch: Paid Burn Only</h2>
+      <h2 class="section-title">How to Remove a DotRot</h2>
       <div class="two-col">
         <div class="panel info-panel">
           <p>
-            Once minted, the NFT is <strong>non-transferable</strong>.
-            The recipient cannot pass it to someone else.
-            They can only remove it by paying the burn fee.
+            DotRot NFTs are <strong>soulbound</strong> — they can't be transferred or sold.
+            The only way to remove one from your wallet is to pay the <strong>2 PAS burn fee</strong>.
           </p>
           <p>
-            This is intentional.
-            DotRot is designed to stick until the target decides it's worth paying to delete.
+            Think of it as a "delete tax." The message sticks until you decide it's worth paying to remove.
           </p>
         </div>
         <div class="panel info-panel">
           <p>
-            If your gag eventually gets burned, you may receive part of the burn fee
-            — but only if you sent it in <strong>Credit Goblin</strong> mode.
+            When someone burns your message, you earn <strong>75% of the burn fee</strong> (1.5 PAS)
+            — but only if you chose <strong>"Take Credit"</strong> when you sent it.
           </p>
           <p>
             If you send anonymously, you get no future kickback.

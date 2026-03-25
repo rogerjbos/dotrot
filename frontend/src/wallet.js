@@ -283,37 +283,19 @@ export async function resolveUsername(username) {
       .map(b => b.toString(16).padStart(2, "0")).join("");
     console.log("[People] Hex:", hexUsername);
 
-    // Try Identity.UsernameOf first, then Resources.UsernameOwnerOf
-    const queries = [
-      { pallet: "Identity", storage: "UsernameOf" },
-      { pallet: "Identity", storage: "UsernameAuthorityOf" },
-      { pallet: "Resources", storage: "UsernameOwnerOf" },
-      { pallet: "Resources", storage: "usernameOwnerOf" },
-    ];
+    const result = await _peopleApi.query.Resources.UsernameOwnerOf.getValue(
+      Binary.fromHex(hexUsername)
+    );
 
-    for (const { pallet, storage } of queries) {
-      try {
-        const q = _peopleApi.query[pallet]?.[storage];
-        if (!q) {
-          console.log(`[People] ${pallet}.${storage} not found, skipping`);
-          continue;
-        }
-        console.log(`[People] Trying ${pallet}.${storage}...`);
-        const result = await q.getValue(Binary.fromHex(hexUsername));
-        console.log(`[People] ${pallet}.${storage} result:`, result);
-        if (result) {
-          const ss58 = result.toString ? result.toString() : String(result);
-          if (ss58 && ss58 !== "null" && ss58 !== "undefined") {
-            console.log("[People] Resolved to:", ss58);
-            return ss58;
-          }
-        }
-      } catch (e) {
-        console.log(`[People] ${pallet}.${storage} failed:`, e.message);
+    if (result) {
+      const ss58 = result.toString ? result.toString() : String(result);
+      if (ss58 && ss58 !== "null" && ss58 !== "undefined") {
+        console.log("[People] Resolved:", username, "→", ss58);
+        return ss58;
       }
     }
 
-    console.warn("[People] All resolution attempts failed for", username);
+    console.warn("[People] No result for", username);
     return null;
   } catch (e) {
     console.error("[People] Username resolution error:", e);
