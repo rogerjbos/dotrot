@@ -20,6 +20,21 @@ import { createInkSdk } from "@polkadot-api/sdk-ink";
 import { encodeFunctionData, decodeFunctionResult, keccak256 } from "viem";
 
 // ---------------------------------------------------------------------------
+//  Decimal conversion: EVM (18 decimals) ↔ Substrate (10 decimals)
+//  Revive.call value parameter is in Substrate units (10 decimals).
+//  EVM contracts use 18 decimals. Conversion factor: 10^8.
+// ---------------------------------------------------------------------------
+const DECIMALS_DIFF = 100_000_000n; // 10^8
+
+function evmToSubstrate(evmValue) {
+  return evmValue / DECIMALS_DIFF;
+}
+
+function substrateToEvm(subValue) {
+  return subValue * DECIMALS_DIFF;
+}
+
+// ---------------------------------------------------------------------------
 //  Config
 // ---------------------------------------------------------------------------
 const RPC_ENDPOINTS = [
@@ -145,6 +160,16 @@ export function onAccountStatusChange(callback) {
   }
 }
 
+/**
+ * Get the PAS balance for an SS58 account on Asset Hub.
+ * Returns balance in Substrate units (10 decimals).
+ */
+export async function getBalance(ss58Address) {
+  if (!_api) throw new Error("PAPI client not initialized");
+  const accountInfo = await _api.query.System.Account.getValue(ss58Address);
+  return accountInfo?.data?.free || 0n;
+}
+
 // ---------------------------------------------------------------------------
 //  Contract Read via ReviveApi.call
 // ---------------------------------------------------------------------------
@@ -209,6 +234,10 @@ export async function readContract(callerSS58, contractAddress, abi, functionNam
 export async function writeContract(callerSS58, contractAddress, abi, functionName, args = [], value = 0n) {
   if (!_api || !_signer) throw new Error("Wallet not connected");
 
+  // Convert value from EVM 18 decimals to Substrate 10 decimals
+  const substrateValue = evmToSubstrate(value);
+  console.log(`[Contract] ${functionName}: EVM value=${value}, Substrate value=${substrateValue}`);
+
   const data = encodeFunctionData({ abi, functionName, args });
 
   const [needsMapping, dryRun] = await Promise.all([
@@ -216,7 +245,7 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
     _api.apis.ReviveApi.call(
       callerSS58,
       Binary.fromHex(contractAddress),
-      value,
+      substrateValue,
       undefined,
       undefined,
       Binary.fromHex(data),
@@ -284,7 +313,7 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
 
   const contractCall = _api.tx.Revive.call({
     dest: Binary.fromHex(contractAddress),
-    value,
+    value: substrateValue,
     weight_limit: { ref_time: refTime, proof_size: proofSize },
     storage_deposit_limit: storageDeposit,
     data: Binary.fromHex(data),

@@ -308,11 +308,16 @@ async function connectWallet() {
     btn.textContent = result.accountName || truncateAddress(userH160);
     btn.classList.add("connected");
 
+    // Show balance in header
+    const balDiv = document.getElementById("live-balance");
+    if (balDiv) balDiv.style.display = "";
+
     showMintForm();
     await loadPrices();
     await Promise.all([
       loadClaimableBalance(),
       loadOwnedTokens(),
+      pollLiveStats(),
     ]);
 
     // Watch for account changes
@@ -848,14 +853,22 @@ async function shareCopyLink() {
 //  Live Stats Polling
 // ---------------------------------------------------------------------------
 async function pollLiveStats() {
-  const el = document.getElementById("stat-minted");
-  if (!el) return;
+  const mintedEl = document.getElementById("stat-minted");
+  const balanceEl = document.getElementById("stat-balance");
 
   async function fetchStat() {
     try {
       if (!walletConnected) return;
-      const total = await contractRead("totalMinted");
-      el.textContent = total.toString();
+      if (mintedEl) {
+        const total = await contractRead("totalMinted");
+        mintedEl.textContent = total.toString();
+      }
+      if (balanceEl && userAddress) {
+        const balance = await DotRotWallet.getBalance(userAddress);
+        // Balance is in Substrate 10-decimal units
+        const pas = Number(balance) / 1e10;
+        balanceEl.textContent = pas.toFixed(2) + " PAS";
+      }
     } catch {
       // Silently ignore
     }

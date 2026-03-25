@@ -10,6 +10,7 @@ import {
   readContract,
   writeContract,
   onAccountStatusChange,
+  getBalance,
 } from "./wallet.js";
 
 window.DotRotWallet = {
@@ -17,6 +18,7 @@ window.DotRotWallet = {
   readContract,
   writeContract,
   onAccountStatusChange,
+  getBalance,
 };
 
 window.dispatchEvent(new Event("dotrot-wallet-ready"));
