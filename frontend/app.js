@@ -16,6 +16,8 @@ let anonymize = true;         // ghost mode by default
 let mintPrice = 0n;
 let burnFeeAmount = 0n;
 let walletConnected = false;
+let resolvedRecipient = null;  // resolved H160 address for recipient
+let resolveDebounce = null;
 
 // ---------------------------------------------------------------------------
 //  Contract helpers
@@ -397,23 +399,54 @@ function updateContractDisplay() {
 function onRecipientInput() {
   const val = document.getElementById("recipient").value.trim();
   const errEl = document.getElementById("recipient-err");
+  const previewEl = document.getElementById("preview-recipient");
+
+  resolvedRecipient = null;
+  if (resolveDebounce) clearTimeout(resolveDebounce);
 
   if (!val) {
     errEl.textContent = "";
-    document.getElementById("preview-recipient").textContent = "—";
+    previewEl.textContent = "—";
     validateForm();
     return;
   }
 
+  // Immediate check for H160 address
   if (isAddress(val)) {
+    resolvedRecipient = val.toLowerCase();
     errEl.textContent = "";
-    document.getElementById("preview-recipient").textContent = truncateAddress(val);
-  } else {
-    errEl.textContent = "Enter a valid Ethereum address (0x...)";
-    document.getElementById("preview-recipient").textContent = "—";
+    previewEl.textContent = truncateAddress(val);
+    validateForm();
+    return;
   }
 
+  // For SS58 or DotNS, resolve async with debounce
+  errEl.textContent = "";
+  previewEl.textContent = "Resolving...";
   validateForm();
+
+  resolveDebounce = setTimeout(async () => {
+    try {
+      const result = await DotRotWallet.resolveAddress(val);
+      // Check input hasn't changed
+      if (document.getElementById("recipient").value.trim() !== val) return;
+
+      if (result) {
+        resolvedRecipient = result.address;
+        errEl.textContent = "";
+        previewEl.textContent = result.display;
+      } else {
+        resolvedRecipient = null;
+        errEl.textContent = "Could not resolve. Try 0x address, SS58, or DotNS name.";
+        previewEl.textContent = "—";
+      }
+    } catch {
+      resolvedRecipient = null;
+      errEl.textContent = "Resolution failed";
+      previewEl.textContent = "—";
+    }
+    validateForm();
+  }, 600);
 }
 
 function onMessageInput() {
@@ -462,10 +495,9 @@ function validateMessage(text) {
 }
 
 function validateForm() {
-  const recipient = document.getElementById("recipient").value.trim();
   const message = document.getElementById("message").value;
 
-  const hasValidRecipient = isAddress(recipient);
+  const hasValidRecipient = resolvedRecipient && isAddress(resolvedRecipient);
   const isValid = hasValidRecipient && validateMessage(message).valid;
 
   document.getElementById("btn-submit").disabled = !isValid;
@@ -475,9 +507,9 @@ function validateForm() {
 //  Submit Handler
 // ---------------------------------------------------------------------------
 async function handleSubmit() {
-  if (!walletConnected) return;
+  if (!walletConnected || !resolvedRecipient) return;
 
-  const recipient = document.getElementById("recipient").value.trim();
+  const recipient = resolvedRecipient;
   const message = document.getElementById("message").value;
 
   if (!isAddress(recipient)) return;

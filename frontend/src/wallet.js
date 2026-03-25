@@ -82,6 +82,156 @@ function ss58ToH160(ss58Address) {
 }
 
 // ---------------------------------------------------------------------------
+//  DotNS name resolution
+// ---------------------------------------------------------------------------
+
+const DOTNS_REGISTRY = "0x4Da0d37aBe96C06ab19963F31ca2DC0412057a6f";
+
+// ENS-style namehash: keccak256(parent + keccak256(label))
+function namehash(name) {
+  const labels = name.split(".");
+  let node = "0x" + "00".repeat(32);
+  for (let i = labels.length - 1; i >= 0; i--) {
+    const labelHash = keccak256(new TextEncoder().encode(labels[i]));
+    const combined = new Uint8Array(64);
+    // Decode parent node hex
+    const nodeBytes = hexToBytes(node);
+    combined.set(nodeBytes, 0);
+    // Decode label hash hex
+    const labelBytes = hexToBytes(labelHash);
+    combined.set(labelBytes, 32);
+    node = keccak256(combined);
+  }
+  return node;
+}
+
+function hexToBytes(hex) {
+  const h = hex.startsWith("0x") ? hex.slice(2) : hex;
+  const bytes = new Uint8Array(h.length / 2);
+  for (let i = 0; i < bytes.length; i++) {
+    bytes[i] = parseInt(h.substr(i * 2, 2), 16);
+  }
+  return bytes;
+}
+
+const REGISTRY_ABI = [
+  { type: "function", name: "resolver", inputs: [{ name: "node", type: "bytes32" }], outputs: [{ type: "address" }], stateMutability: "view" },
+];
+
+const RESOLVER_ABI = [
+  { type: "function", name: "addr", inputs: [{ name: "node", type: "bytes32" }], outputs: [{ type: "address" }], stateMutability: "view" },
+];
+
+/**
+ * Resolve a DotNS name to an H160 address.
+ * e.g. "rogerjbos" → looks up "rogerjbos.dot"
+ * @param {string} name - Domain name (with or without .dot suffix)
+ * @returns {string|null} H160 address or null if not found
+ */
+export async function resolveDotNS(name) {
+  if (!_api) return null;
+
+  // Append .dot if not present
+  const fullName = name.includes(".") ? name : name + ".dot";
+  const node = namehash(fullName);
+
+  try {
+    // Query registry for resolver address
+    const resolverData = encodeFunctionData({ abi: REGISTRY_ABI, functionName: "resolver", args: [node] });
+    const resolverResult = await _api.apis.ReviveApi.call(
+      "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM", // use a dummy address for reads
+      Binary.fromHex(DOTNS_REGISTRY),
+      0n, undefined, undefined,
+      Binary.fromHex(resolverData),
+      { at: "best" },
+    );
+
+    const resolverCallResult = resolverResult.result;
+    if (!resolverCallResult || ("success" in resolverCallResult && !resolverCallResult.success)) {
+      return null;
+    }
+
+    const resolverHex = extractHex(resolverCallResult);
+    if (!resolverHex || resolverHex === "0x") return null;
+    const resolverAddr = decodeFunctionResult({ abi: REGISTRY_ABI, functionName: "resolver", data: resolverHex });
+    if (!resolverAddr || resolverAddr === "0x0000000000000000000000000000000000000000") return null;
+
+    // Query resolver for addr
+    const addrData = encodeFunctionData({ abi: RESOLVER_ABI, functionName: "addr", args: [node] });
+    const addrResult = await _api.apis.ReviveApi.call(
+      "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM",
+      Binary.fromHex(resolverAddr),
+      0n, undefined, undefined,
+      Binary.fromHex(addrData),
+      { at: "best" },
+    );
+
+    const addrCallResult = addrResult.result;
+    if (!addrCallResult || ("success" in addrCallResult && !addrCallResult.success)) {
+      return null;
+    }
+
+    const addrHex = extractHex(addrCallResult);
+    if (!addrHex || addrHex === "0x") return null;
+    const addr = decodeFunctionResult({ abi: RESOLVER_ABI, functionName: "addr", data: addrHex });
+    if (!addr || addr === "0x0000000000000000000000000000000000000000") return null;
+
+    return addr.toLowerCase();
+  } catch (e) {
+    console.warn("[DotNS] Resolution failed for", fullName, e);
+    return null;
+  }
+}
+
+function extractHex(callResult) {
+  if ("success" in callResult) {
+    const valueData = callResult.value?.data || callResult.value;
+    if (valueData && typeof valueData.asHex === "function") return valueData.asHex();
+    if (typeof valueData === "string") return valueData.startsWith("0x") ? valueData : `0x${valueData}`;
+    if (valueData && valueData.bytes) return "0x" + Array.from(valueData.bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  const data = callResult.data || callResult.value?.data || callResult;
+  if (data && typeof data.asHex === "function") return data.asHex();
+  if (typeof data === "string") return data.startsWith("0x") ? data : `0x${data}`;
+  return null;
+}
+
+/**
+ * Resolve any address input to an H160 address.
+ * Supports: H160 (0x...), SS58 (5...), DotNS names (name or name.dot)
+ * @returns {{ address: string, type: string, display: string } | null}
+ */
+export async function resolveAddress(input) {
+  const trimmed = input.trim();
+
+  // H160 address
+  if (/^0x[a-fA-F0-9]{40}$/i.test(trimmed)) {
+    return { address: trimmed.toLowerCase(), type: "h160", display: trimmed };
+  }
+
+  // SS58 address (starts with 1, 5, or other prefix, 46-48 chars, base58)
+  if (/^[1-9A-HJ-NP-Za-km-z]{46,48}$/.test(trimmed)) {
+    try {
+      const h160 = ss58ToH160(trimmed);
+      return { address: h160, type: "ss58", display: `${trimmed.slice(0, 8)}... → ${h160.slice(0, 10)}...` };
+    } catch {
+      // Not a valid SS58, fall through to DotNS
+    }
+  }
+
+  // DotNS name (alphanumeric, may contain dots and hyphens)
+  if (/^[a-zA-Z0-9][a-zA-Z0-9.\-]*$/.test(trimmed) && trimmed.length <= 64) {
+    const resolved = await resolveDotNS(trimmed);
+    if (resolved) {
+      const displayName = trimmed.includes(".") ? trimmed : trimmed + ".dot";
+      return { address: resolved, type: "dotns", display: `${displayName} → ${resolved.slice(0, 10)}...` };
+    }
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 //  Connect wallet via Spektr
 //  Returns a Promise that resolves when an account is available.
 //  If no account yet, subscribes to status changes and waits.
