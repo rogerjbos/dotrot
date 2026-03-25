@@ -238,6 +238,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   applyRouting();
 
   // Auto-connect via Spektr (Triangle host)
+  // Shows "Connecting..." while waiting for user to log in to the host
+  showStatus("Connecting to wallet... Please log in if prompted.", "info");
   connectWallet();
 });
 

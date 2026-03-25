@@ -4,7 +4,7 @@
  * Connects via Product SDK (Spektr), interacts with the EVM contract
  * through polkadot-api's Revive API. No derived keys, no MetaMask.
  *
- * Pattern based on ignite project's useContractPAPI.ts
+ * Pattern based on ignite project's WalletContext + useContractPAPI.
  */
 
 import {
@@ -34,6 +34,7 @@ let _accountsProvider = null;
 let _providerAccounts = [];
 let _accounts = [];
 let _signer = null;
+let _enableFactory = null;
 let _client = null;
 let _api = null;
 let _inkSdk = null;
@@ -67,31 +68,55 @@ function ss58ToH160(ss58Address) {
 
 // ---------------------------------------------------------------------------
 //  Connect wallet via Spektr
+//  Returns a Promise that resolves when an account is available.
+//  If no account yet, subscribes to status changes and waits.
 // ---------------------------------------------------------------------------
 
 export async function connectWallet() {
   await injectSpektrExtension();
 
-  const enableFactory = await createNonProductExtensionEnableFactory(sandboxTransport);
-  if (!enableFactory) {
+  _enableFactory = await createNonProductExtensionEnableFactory(sandboxTransport);
+  if (!_enableFactory) {
     throw new Error("Not running inside the Host — open this page at dotrot.dot.li");
   }
 
-  const injected = await enableFactory();
   _accountsProvider = createAccountsProvider(sandboxTransport);
 
+  // Try fetching accounts immediately
+  const result = await tryFetchAccounts();
+  if (result) return result;
+
+  // No accounts yet — wait for the user to log in
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Timed out waiting for account. Please log in to the Host."));
+    }, 120000); // 2 minute timeout
+
+    _accountsProvider.subscribeAccountConnectionStatus(async (status) => {
+      if (status === "connected") {
+        const result = await tryFetchAccounts();
+        if (result) {
+          clearTimeout(timeout);
+          resolve(result);
+        }
+      }
+    });
+  });
+}
+
+async function tryFetchAccounts() {
+  const injected = await _enableFactory();
   _accounts = await injected.accounts.get();
+
   const res = await _accountsProvider.getNonProductAccounts();
   _providerAccounts = res.match(
     (a) => a,
     () => []
   );
 
-  if (_accounts.length === 0) {
-    throw new Error("No accounts found. Please log in to the Host.");
-  }
+  if (_accounts.length === 0) return null;
 
-  // Build signer for transactions
+  // Build signer
   _signer = _accountsProvider.getNonProductAccountSigner({
     dotNsIdentifier: "",
     derivationIndex: 0,
@@ -124,15 +149,6 @@ export function onAccountStatusChange(callback) {
 //  Contract Read via ReviveApi.call
 // ---------------------------------------------------------------------------
 
-/**
- * Read from an EVM contract via the Revive API (no signing needed).
- * @param {string} callerSS58 - SS58 address of the caller
- * @param {string} contractAddress - H160 contract address
- * @param {Array} abi - Contract ABI (viem format)
- * @param {string} functionName - Function to call
- * @param {Array} args - Function arguments
- * @returns {*} Decoded return value
- */
 export async function readContract(callerSS58, contractAddress, abi, functionName, args = []) {
   if (!_api) throw new Error("PAPI client not initialized");
 
@@ -151,7 +167,6 @@ export async function readContract(callerSS58, contractAddress, abi, functionNam
   const callResult = result.result;
   if (!callResult) throw new Error(`No result for ${functionName}`);
 
-  // Handle success/failure
   if ("success" in callResult) {
     if (!callResult.success) {
       throw new Error(`Contract read failed: ${functionName}`);
@@ -171,7 +186,6 @@ export async function readContract(callerSS58, contractAddress, abi, functionNam
     return safeDecode(abi, functionName, resultData);
   }
 
-  // Type-based result format
   if (callResult.type === "Reverted" || callResult.type === "Error") {
     throw new Error(`Contract call ${callResult.type}`);
   }
@@ -192,23 +206,11 @@ export async function readContract(callerSS58, contractAddress, abi, functionNam
 //  Contract Write via tx.Revive.call
 // ---------------------------------------------------------------------------
 
-/**
- * Write to an EVM contract via Revive.call extrinsic.
- * Auto-maps account if needed.
- * @param {string} callerSS58 - SS58 address of the caller
- * @param {string} contractAddress - H160 contract address
- * @param {Array} abi - Contract ABI (viem format)
- * @param {string} functionName - Function to call
- * @param {Array} args - Function arguments
- * @param {bigint} value - PAS value to send (default 0)
- * @returns {object} { receipt, eventData }
- */
 export async function writeContract(callerSS58, contractAddress, abi, functionName, args = [], value = 0n) {
   if (!_api || !_signer) throw new Error("Wallet not connected");
 
   const data = encodeFunctionData({ abi, functionName, args });
 
-  // Check account mapping and dry-run in parallel
   const [needsMapping, dryRun] = await Promise.all([
     _inkSdk.addressIsMapped(callerSS58).then((mapped) => !mapped),
     _api.apis.ReviveApi.call(
@@ -222,14 +224,15 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
     ).catch((err) => { console.warn(`[Contract] dry-run failed for ${functionName}:`, err); return null; }),
   ]);
 
-  // Gas estimation from dry-run
   let refTime = 50_000_000_000n;
   let proofSize = 2_000_000n;
   let storageDeposit = 10_000_000_000n;
 
   if (dryRun) {
     const callResult = dryRun.result;
-    if (callResult && "success" in callResult && !callResult.success) {
+    // Only throw on revert if account is already mapped — unmapped accounts
+    // always fail dry-run since Revive can't resolve the caller
+    if (!needsMapping && callResult && "success" in callResult && !callResult.success) {
       throw new Error(`Contract call reverted: ${functionName}`);
     }
     if (dryRun.gas_required) {
@@ -243,7 +246,6 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
     }
   }
 
-  // Build the Revive.call extrinsic
   const contractCall = _api.tx.Revive.call({
     dest: Binary.fromHex(contractAddress),
     value,
@@ -252,7 +254,6 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
     data: Binary.fromHex(data),
   });
 
-  // If mapping needed, batch both in one user approval
   let txToSubmit;
   if (needsMapping) {
     txToSubmit = _api.tx.Utility.batch_all({
@@ -265,7 +266,6 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
     txToSubmit = contractCall;
   }
 
-  // Sign, submit, wait for block inclusion
   const result = await new Promise((resolve, reject) => {
     let isResolved = false;
     const timeoutId = setTimeout(() => {
@@ -294,7 +294,7 @@ export async function writeContract(callerSS58, contractAddress, abi, functionNa
             isResolved = true;
             clearTimeout(timeoutId);
             subscription.unsubscribe();
-            reject(new Error(`Transaction failed on-chain`));
+            reject(new Error("Transaction failed on-chain"));
             return;
           }
           isResolved = true;
