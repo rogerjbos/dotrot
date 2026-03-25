@@ -1,37 +1,42 @@
 /**
- * DotRot — Minimal ABI (Polkadot Asset Hub Edition)
- *
- * Only the functions and events required by the frontend are included.
- * Native token payments — no ERC-20 interactions needed.
+ * DotRot — Contract ABI (viem JSON format for Revive API encoding)
  */
 const GAG_ABI = [
-  // ---- Views ----
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function queueSize() view returns (uint8)",
-  "function totalMinted() view returns (uint256)",
-  "function mintPrice() view returns (uint256)",
-  "function burnFee() view returns (uint256)",
-  "function burnFeeOriginShare() view returns (uint256)",
-  "function MAX_BPTS() view returns (uint256)",
-  "function claimable() view returns (uint256)",
-  "function getProjectFees() view returns (uint256)",
-  "function getTokenMessage(uint256 tokenId) view returns (string)",
-  "function tokenURI(uint256 tokenId) view returns (string)",
-  "function ownerOf(uint256 tokenId) view returns (address)",
-  "function paused() view returns (bool)",
-  "function mintingQueue(uint8 index) view returns (address recipient, address origin, string text)",
-
-  // ---- Mutations ----
-  "function submitMintIntent(bool anonymize, address recipient, string message) payable",
-  "function burnToken(uint256 tokenId) payable",
-  "function claimFees()",
-
-  // ---- ERC-721 standard ----
-  "function balanceOf(address owner) view returns (uint256)",
-
-  // ---- Events ----
-  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
-  "event PricesUpdated(uint256 mintPrice, uint256 burnFee)",
-  "event TokenCIDSet(uint256 indexed tokenId, string cid)",
+  { type: "function", name: "name", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "symbol", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "queueSize", inputs: [], outputs: [{ type: "uint8" }], stateMutability: "view" },
+  { type: "function", name: "totalMinted", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "mintPrice", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "burnFee", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "burnFeeOriginShare", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "claimable", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "getProjectFees", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "getTokenMessage", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "tokenURI", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "ownerOf", inputs: [{ name: "tokenId", type: "uint256" }], outputs: [{ type: "address" }], stateMutability: "view" },
+  { type: "function", name: "paused", inputs: [], outputs: [{ type: "bool" }], stateMutability: "view" },
+  { type: "function", name: "balanceOf", inputs: [{ name: "owner", type: "address" }], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  {
+    type: "function", name: "submitMintIntent", stateMutability: "payable",
+    inputs: [
+      { name: "anonymize", type: "bool" },
+      { name: "recipient", type: "address" },
+      { name: "message", type: "string" },
+    ],
+    outputs: [],
+  },
+  {
+    type: "function", name: "burnToken", stateMutability: "payable",
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    outputs: [],
+  },
+  { type: "function", name: "claimFees", inputs: [], outputs: [], stateMutability: "nonpayable" },
+  {
+    type: "event", name: "Transfer",
+    inputs: [
+      { name: "from", type: "address", indexed: true },
+      { name: "to", type: "address", indexed: true },
+      { name: "tokenId", type: "uint256", indexed: true },
+    ],
+  },
 ];

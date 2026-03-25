@@ -1,24 +1,48 @@
 /**
  * DotRot — Frontend Application (Polkadot Asset Hub Edition)
  *
- * Pure client-side logic. Connects to the DotRot contract via ethers.js,
- * handles wallet connection, minting (native PAS payment), burning, and claiming.
+ * Pure client-side logic. Connects via Product SDK (Spektr),
+ * interacts with the EVM contract through polkadot-api Revive API.
  */
 
-/* global ethers, GAG_CONFIG, GAG_ABI, DotRotWallet */
+/* global GAG_CONFIG, GAG_ABI, DotRotWallet */
 
 // ---------------------------------------------------------------------------
 //  State
 // ---------------------------------------------------------------------------
-let provider = null;
-let signer = null;
-let gagContract = null;
-let gagReadOnly = null;
-let userAddress = null;
-let anonymize = true;        // ghost mode by default
+let userAddress = null;       // SS58 substrate address
+let userH160 = null;          // H160 EVM address
+let anonymize = true;         // ghost mode by default
 let mintPrice = 0n;
 let burnFeeAmount = 0n;
-let walletState = null;      // full wallet state from DotRotWallet.connectWallet
+let walletConnected = false;
+
+// ---------------------------------------------------------------------------
+//  Contract helpers
+// ---------------------------------------------------------------------------
+async function contractRead(functionName, args = []) {
+  return DotRotWallet.readContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args);
+}
+
+async function contractWrite(functionName, args = [], value = 0n) {
+  return DotRotWallet.writeContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args, value);
+}
+
+// ---------------------------------------------------------------------------
+//  Utility — format PAS (18 decimals)
+// ---------------------------------------------------------------------------
+function formatPAS(wei) {
+  if (typeof wei !== "bigint") wei = BigInt(wei);
+  const whole = wei / 1000000000000000000n;
+  const frac = wei % 1000000000000000000n;
+  if (frac === 0n) return whole.toString();
+  const fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+  return `${whole}.${fracStr}`;
+}
+
+function isAddress(val) {
+  return /^0x[a-fA-F0-9]{40}$/i.test(val.trim());
+}
 
 // ---------------------------------------------------------------------------
 //  Router — path-based page detection
@@ -105,18 +129,17 @@ async function loadGagPage() {
   idBadge.textContent = "#" + tokenIdStr;
   document.title = `DotRot #${tokenIdStr}`;
 
-  const contract = gagContract || gagReadOnly;
-  if (!contract) {
+  if (!walletConnected) {
     svgContainer.innerHTML = '<div class="preview-placeholder">Connecting to Asset Hub...</div>';
     setTimeout(loadGagPage, 2000);
     return;
   }
 
   try {
-    const owner = await contract.ownerOf(tokenId);
+    const owner = await contractRead("ownerOf", [tokenId]);
     ownerEl.textContent = truncateAddress(owner);
 
-    const uri = await contract.tokenURI(tokenId);
+    const uri = await contractRead("tokenURI", [tokenId]);
 
     if (!uri || uri.length === 0) {
       svgContainer.innerHTML = '<div class="preview-placeholder">Metadata not yet uploaded. Check back soon.</div>';
@@ -161,7 +184,7 @@ async function loadGagPage() {
     }
 
     // Show burn CTA if connected wallet owns this token
-    if (userAddress && owner.toLowerCase() === userAddress.toLowerCase()) {
+    if (userH160 && owner.toLowerCase() === userH160.toLowerCase()) {
       burnCta.style.display = "block";
       const burnLink = document.getElementById("gag-page-burn-link");
       if (burnLink) {
@@ -219,12 +242,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 function initReadOnly() {
-  try {
-    provider = new ethers.JsonRpcProvider(GAG_CONFIG.rpcUrl);
-    gagReadOnly = new ethers.Contract(GAG_CONFIG.contractAddress, GAG_ABI, provider);
-  } catch (e) {
-    console.warn("Read-only provider init failed:", e);
-  }
+  // Reads go through PAPI after wallet connects — no separate init needed
 }
 
 // ---------------------------------------------------------------------------
@@ -274,26 +292,19 @@ function bindUI() {
 }
 
 // ---------------------------------------------------------------------------
-//  Wallet Connection (Triangle / Spektr only)
+//  Wallet Connection (Triangle / Spektr only via Revive API)
 // ---------------------------------------------------------------------------
 async function connectWallet() {
   try {
-    walletState = await DotRotWallet.connectWallet(GAG_CONFIG);
-    signer = walletState.evmWallet;
-    userAddress = walletState.evmAddress;
-
-    gagContract = new ethers.Contract(GAG_CONFIG.contractAddress, GAG_ABI, signer);
+    const result = await DotRotWallet.connectWallet();
+    userAddress = result.substrateAddress;
+    userH160 = result.h160Address;
+    walletConnected = true;
 
     // Update button
     const btn = document.getElementById("btn-connect");
-    btn.textContent = walletState.accountName || truncateAddress(userAddress);
+    btn.textContent = result.accountName || truncateAddress(userH160);
     btn.classList.add("connected");
-
-    // If derived EVM address needs funding, show prompt
-    if (walletState.needsFunding) {
-      showFundingPrompt();
-      return;
-    }
 
     showMintForm();
     await loadPrices();
@@ -315,61 +326,22 @@ async function connectWallet() {
   }
 }
 
-/** Show a prompt to fund the derived EVM address from the Substrate account */
-function showFundingPrompt() {
-  const mintForm = document.getElementById("mint-form");
-  if (mintForm) mintForm.style.display = "none";
-
-  showStatus(
-    `Your DotRot address (${truncateAddress(userAddress)}) needs PAS to interact with the contract. Click "Fund Wallet" to transfer PAS from your Polkadot account.`,
-    "info"
-  );
-
-  const txStatus = document.getElementById("tx-status");
-  if (txStatus) {
-    const fundBtn = document.createElement("button");
-    fundBtn.className = "btn btn-accent";
-    fundBtn.textContent = "Fund Wallet (5 PAS)";
-    fundBtn.style.marginTop = "12px";
-    fundBtn.onclick = async () => {
-      fundBtn.disabled = true;
-      fundBtn.textContent = "Funding...";
-      try {
-        await DotRotWallet.fundEvmAddress(
-          walletState.accountsProvider,
-          walletState.providerAccounts,
-          walletState.evmAddress,
-          5000000000000000000n // 5 PAS
-        );
-        showStatus("Funded! Reloading...", "success");
-        setTimeout(() => window.location.reload(), 2000);
-      } catch (e) {
-        showStatus("Funding failed: " + e.message, "error");
-        fundBtn.disabled = false;
-        fundBtn.textContent = "Fund Wallet (5 PAS)";
-      }
-    };
-    txStatus.appendChild(fundBtn);
-  }
-}
-
 // ---------------------------------------------------------------------------
 //  Price Loading
 // ---------------------------------------------------------------------------
 async function loadPrices() {
-  const contract = gagContract || gagReadOnly;
-  if (!contract) return;
+  if (!walletConnected) return;
 
   try {
-    mintPrice = await contract.mintPrice();
-    burnFeeAmount = await contract.burnFee();
+    mintPrice = await contractRead("mintPrice");
+    burnFeeAmount = await contractRead("burnFee");
 
     const mintEl = document.getElementById("mint-price");
-    if (mintEl) mintEl.textContent = ethers.formatEther(mintPrice) + " PAS";
+    if (mintEl) mintEl.textContent = formatPAS(mintPrice) + " PAS";
     const burnEl = document.getElementById("burn-fee");
-    if (burnEl) burnEl.textContent = ethers.formatEther(burnFeeAmount) + " PAS";
+    if (burnEl) burnEl.textContent = formatPAS(burnFeeAmount) + " PAS";
     const burnFeeDisplay = document.getElementById("burn-fee-display");
-    if (burnFeeDisplay) burnFeeDisplay.textContent = ethers.formatEther(burnFeeAmount) + " PAS";
+    if (burnFeeDisplay) burnFeeDisplay.textContent = formatPAS(burnFeeAmount) + " PAS";
   } catch (err) {
     console.error("Failed to load prices:", err);
   }
@@ -426,7 +398,7 @@ function onRecipientInput() {
     return;
   }
 
-  if (ethers.isAddress(val)) {
+  if (isAddress(val)) {
     errEl.textContent = "";
     document.getElementById("preview-recipient").textContent = truncateAddress(val);
   } else {
@@ -486,7 +458,7 @@ function validateForm() {
   const recipient = document.getElementById("recipient").value.trim();
   const message = document.getElementById("message").value;
 
-  const hasValidRecipient = ethers.isAddress(recipient);
+  const hasValidRecipient = isAddress(recipient);
   const isValid = hasValidRecipient && validateMessage(message).valid;
 
   document.getElementById("btn-submit").disabled = !isValid;
@@ -496,12 +468,12 @@ function validateForm() {
 //  Submit Handler
 // ---------------------------------------------------------------------------
 async function handleSubmit() {
-  if (!gagContract) return;
+  if (!walletConnected) return;
 
   const recipient = document.getElementById("recipient").value.trim();
   const message = document.getElementById("message").value;
 
-  if (!ethers.isAddress(recipient)) return;
+  if (!isAddress(recipient)) return;
 
   const btn = document.getElementById("btn-submit");
   btn.disabled = true;
@@ -509,12 +481,7 @@ async function handleSubmit() {
   showStatus("Sending your gag into the chaos buffer...", "info");
 
   try {
-    const tx = await gagContract.submitMintIntent(anonymize, recipient, message, {
-      value: mintPrice,
-    });
-    showStatus("Transaction submitted. Waiting for confirmation...", "info");
-    showToast("Transaction submitted. Waiting for confirmation...", "info");
-    await tx.wait();
+    await contractWrite("submitMintIntent", [anonymize, recipient, message], mintPrice);
     showStatus("Your gag has entered the live chaos buffer. You funded the machine. May the slots be cruel.", "success");
     showToast("Gag submitted! The chaos buffer has been fed.", "success", 6000);
 
@@ -523,7 +490,6 @@ async function handleSubmit() {
 
     pollLiveStats();
 
-    // Reset form
     document.getElementById("recipient").value = "";
     document.getElementById("message").value = "";
     onRecipientInput();
@@ -544,11 +510,11 @@ async function handleSubmit() {
 // ---------------------------------------------------------------------------
 async function loadClaimableBalance() {
   const container = document.getElementById("claim-balances");
-  if (!gagContract || !userAddress || !container) return;
+  if (!walletConnected || !container) return;
 
   try {
-    const claimableAmount = await gagContract.claimable();
-    const formatted = ethers.formatEther(claimableAmount);
+    const claimableAmount = await contractRead("claimable");
+    const formatted = formatPAS(claimableAmount);
 
     container.innerHTML = `
       <div class="claim-row">
@@ -575,14 +541,12 @@ async function loadClaimableBalance() {
 }
 
 async function handleClaim() {
-  if (!gagContract) return;
+  if (!walletConnected) return;
 
   showStatus("Claiming burn tribute...", "info");
 
   try {
-    const tx = await gagContract.claimFees();
-    showStatus("Claim submitted. Waiting for confirmation...", "info");
-    await tx.wait();
+    await contractWrite("claimFees");
     showStatus("Burn tribute claimed. You have been compensated for your menace.", "success");
     await loadClaimableBalance();
   } catch (err) {
@@ -609,39 +573,29 @@ async function loadOwnedTokens() {
   if (errEl) errEl.textContent = "";
   ownedTokens = [];
 
-  const contract = gagContract || gagReadOnly;
-  if (!contract || !userAddress) {
+  if (!walletConnected) {
     select.innerHTML = '<option value="" disabled selected>Connect wallet first</option>';
     return;
   }
 
   try {
-    const fromBlock = GAG_CONFIG.deployBlock || 0;
-    const filter = contract.filters.Transfer(null, userAddress);
-    const events = await contract.queryFilter(filter, fromBlock, "latest");
+    // Scan all minted tokens and check ownership via Revive API
+    const totalMinted = await contractRead("totalMinted");
+    const total = Number(totalMinted);
 
-    const candidateIds = [...new Set(events.map(e => e.args.tokenId))];
-
-    const verified = [];
-    for (const tokenId of candidateIds) {
+    for (let i = 0; i < total; i++) {
       try {
-        const owner = await contract.ownerOf(tokenId);
-        if (owner.toLowerCase() === userAddress.toLowerCase()) {
-          verified.push(tokenId);
+        const owner = await contractRead("ownerOf", [BigInt(i)]);
+        if (owner && owner.toLowerCase() === userH160.toLowerCase()) {
+          let message = "";
+          try {
+            message = await contractRead("getTokenMessage", [BigInt(i)]);
+          } catch {}
+          ownedTokens.push({ tokenId: i, message });
         }
       } catch {
         // ownerOf reverts if token was burned
       }
-    }
-
-    for (const tokenId of verified) {
-      let message = "";
-      try {
-        message = await contract.getTokenMessage(tokenId);
-      } catch {
-        // If getTokenMessage fails, just show the ID
-      }
-      ownedTokens.push({ tokenId, message });
     }
 
     populateBurnTokenDropdown();
@@ -707,7 +661,7 @@ function validateBurnForm() {
 }
 
 async function handleBurn() {
-  if (!gagContract) return;
+  if (!walletConnected) return;
 
   const tokenIdStr = document.getElementById("burn-token-id").value;
   if (!tokenIdStr) return;
@@ -720,10 +674,7 @@ async function handleBurn() {
   showBurnStatus("Sending burn transaction...", "info");
 
   try {
-    const tx = await gagContract.burnToken(tokenId, { value: burnFeeAmount });
-    showBurnStatus("Burn submitted. Waiting for confirmation...", "info");
-    showToast("Burn transaction submitted...", "info");
-    await tx.wait();
+    await contractWrite("burnToken", [tokenId], burnFeeAmount);
     showBurnStatus("Token #" + tokenIdStr + " has been incinerated. The curse is lifted.", "success");
     showToast("Gag burned! The wallet pollution has been cleansed.", "success", 6000);
 
@@ -900,9 +851,8 @@ async function pollLiveStats() {
 
   async function fetchStat() {
     try {
-      const contract = gagContract || gagReadOnly;
-      if (!contract) return;
-      const total = await contract.totalMinted();
+      if (!walletConnected) return;
+      const total = await contractRead("totalMinted");
       el.textContent = total.toString();
     } catch {
       // Silently ignore

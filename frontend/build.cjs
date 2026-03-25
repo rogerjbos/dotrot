@@ -185,11 +185,6 @@ ${headContent}
     /src="(style\.css|app\.js|config\.js|abi\.js)"/g,
     `src="${assetPrefix}$1"`
   );
-  html = html.replace(
-    'src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"',
-    `src="${assetPrefix}vendor/ethers.umd.min.js"`
-  );
-
   // Fix all local script sources for nested paths
   html = html.replace(
     /  <script src="config\.js"><\/script>/,
@@ -199,10 +194,13 @@ ${headContent}
     /  <script src="abi\.js"><\/script>/,
     `  <script src="${assetPrefix}abi.js"></script>`
   );
-  // Inject wallet bundle before app.js (provides DotRotWallet global)
+  html = html.replace(
+    /  <script src="wallet-bundle\.js"><\/script>/,
+    `  <script src="${assetPrefix}wallet-bundle.js"></script>`
+  );
   html = html.replace(
     /  <script src="app\.js"><\/script>/,
-    `  <script src="${assetPrefix}wallet-bundle.js"></script>\n  <script src="${assetPrefix}app.js"></script>`
+    `  <script src="${assetPrefix}app.js"></script>`
   );
 
   return html;
