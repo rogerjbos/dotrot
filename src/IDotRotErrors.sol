@@ -2,19 +2,19 @@
 pragma solidity ^0.8.27;
 
 /**
- * @title IGigglesAndGagsErrors
- * @notice Custom error definitions shared across the Giggles and Gags contracts.
+ * @title IDotRotErrors
+ * @notice Custom error definitions shared across the DotRot contracts.
  * @dev Using custom errors instead of `require` strings saves deployment and runtime gas.
  */
-interface IGigglesAndGagsErrors {
+interface IDotRotErrors {
     /// @notice Thrown when a proposed burn-fee origin share exceeds `MAX_BPTS` (10 000).
     error IncorrectShare();
 
     /// @notice Thrown when a fee withdrawal `amount` exceeds the available `projectFees` balance.
     error InsufficientFees();
 
-    /// @notice Thrown when a payment amount resolves to zero (e.g. a zero-priced token).
-    error InvalidAmount();
+    /// @notice Thrown when `msg.value` is less than the required payment amount.
+    error InsufficientPayment();
 
     /// @notice Thrown when attempting to set a burn fee to zero.
     error InvalidBurningFee();
@@ -28,9 +28,6 @@ interface IGigglesAndGagsErrors {
     /// @notice Thrown when constructor seed arrays do not match `queueSize`.
     error IncorrectSeedSize();
 
-    /// @notice Thrown when `address(0)` is passed as a payment token address.
-    error InvalidTokenAddress();
-
     /// @notice Thrown when claiming or withdrawing fees and the balance is zero.
     error NoFees();
 
@@ -40,6 +37,9 @@ interface IGigglesAndGagsErrors {
     /// @notice Thrown when a caller tries to burn a token they do not own.
     error NotTokenOwner();
 
-    /// @notice Thrown when a payment token is not in the supported set.
-    error UnsupportedToken();
+    /// @notice Thrown when a caller is not the designated metadata updater.
+    error NotMetadataUpdater();
+
+    /// @notice Thrown when a native token transfer fails.
+    error TransferFailed();
 }

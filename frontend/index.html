@@ -3,20 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Giggles and Gags — On-Chain Social Damage</title>
-  <meta name="description" content="Send cursed on-chain messages. Non-transferable prank NFTs powered by stablecoins and poor judgment." />
-  <meta property="og:title" content="Giggles and Gags" />
+  <title>DotRot — On-Chain Social Damage</title>
+  <meta name="description" content="Send cursed on-chain messages. Non-transferable prank NFTs on Polkadot Asset Hub." />
+  <meta property="og:title" content="DotRot" />
   <meta property="og:description" content="On-chain social damage. Send a cursed message, let the slot machine decide." />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://gigglesandgags.eth.limo/og/default.png" />
+  <meta property="og:image" content="https://dotrot.eth.limo/og/default.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Giggles and Gags" />
-  <meta name="twitter:description" content="Non-transferable prank NFTs. On-chain chaos on Base." />
-  <meta name="twitter:image" content="https://gigglesandgags.eth.limo/og/default.png" />
-  <meta name="fc:miniapp" content='{"version":"1","imageUrl":"https://gigglesandgags.eth.limo/og/default.png","button":{"title":"Unleash Chaos","action":{"type":"launch_miniapp","name":"Giggles and Gags","url":"https://gag-blue-iota.vercel.app","splashImageUrl":"https://gigglesandgags.eth.limo/og/splash-200.png","splashBackgroundColor":"#07080c"}}}' />
-  <meta name="base:app_id" content="69b2ba685600c39dcfa4fe3f" />
+  <meta name="twitter:title" content="DotRot" />
+  <meta name="twitter:description" content="Non-transferable prank NFTs. On-chain chaos on Polkadot." />
+  <meta name="twitter:image" content="https://dotrot.eth.limo/og/default.png" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -66,7 +64,7 @@
   <!-- ============================================================ -->
   <header id="header">
     <div class="header-inner">
-      <span class="logo glitch-hover" data-text="GaG">GaG</span>
+      <span class="logo glitch-hover" data-text="DotRot">DotRot</span>
       <nav>
         <a href="#how-it-works">How It Works</a>
         <a href="#mint">Send a Gag</a>
@@ -95,15 +93,13 @@
   <section id="hero">
     <div class="hero-glow"></div>
     <div class="container">
-      <div class="hero-badge">On-Chain Social Damage on Base</div>
+      <div class="hero-badge">On-Chain Social Damage on Polkadot</div>
       <h1 class="hero-title">
-        <span class="glitch" data-text="Giggles">Giggles</span>
-        <span class="amp">&amp;</span>
-        <span class="glitch" data-text="Gags">Gags</span>
+        <span class="glitch" data-text="Dot">Dot</span><span class="glitch" data-text="Rot">Rot</span>
       </h1>
       <p class="hero-tagline">Send a cursed on-chain message. Let the slot machine decide who gets minted next.</p>
       <p class="hero-sub">
-        A non-transferable prank NFT powered by stablecoins and poor decisions.
+        A non-transferable prank NFT powered by PAS tokens and poor decisions.
         You submit a message, fund the mischief, and the contract mints whatever
         previous message gets picked from the live slot buffer.
         Your target can't transfer it away. They can only burn it by paying.
@@ -121,7 +117,7 @@
         <span class="sep">/</span>
         <span>No backend puppet strings</span>
         <span class="sep">/</span>
-        <span>Base L2</span>
+        <span>Asset Hub</span>
       </div>
     </div>
   </section>
@@ -137,7 +133,7 @@
           <span class="step-num">01</span>
           <span class="step-icon">&#x270D;</span>
           <h3>You write the message</h3>
-          <p>Pick a victim, write a short message, choose a supported stablecoin, and decide whether you want attribution or ghost mode.</p>
+          <p>Pick a victim, write a short message, pay with PAS, and decide whether you want attribution or ghost mode.</p>
         </div>
         <div class="step-card fade-in">
           <span class="step-num">02</span>
@@ -182,13 +178,13 @@
             <button id="btn-connect-form" class="btn btn-accent">Connect Wallet</button>
           </div>
           <div id="network-guard" class="wallet-guard" style="display:none;">
-            <p>Wrong network. Please switch to <strong>Base</strong>.</p>
-            <button id="btn-switch-network" class="btn btn-accent">Switch to Base</button>
+            <p>Wrong network. Please switch to <strong>Paseo Asset Hub</strong>.</p>
+            <button id="btn-switch-network" class="btn btn-accent">Switch to Asset Hub</button>
           </div>
           <form id="mint-form" style="display:none;" autocomplete="off">
             <!-- Recipient -->
             <label for="recipient">Recipient Address or Name</label>
-            <input id="recipient" type="text" placeholder="0x... or name.base.eth / name.eth / name.crypto" maxlength="256" spellcheck="false" />
+            <input id="recipient" type="text" placeholder="0x..." maxlength="256" spellcheck="false" />
             <span id="recipient-resolved" class="field-resolved"></span>
             <span id="recipient-err" class="field-err"></span>
 
@@ -199,10 +195,10 @@
             <span class="field-hint">ASCII letters, numbers, and basic punctuation only. No leading/trailing/double spaces.</span>
 
             <!-- Token selector -->
-            <label for="token-select">Payment Token</label>
+            <label>Payment</label>
             <div class="token-select-row">
-              <img id="token-icon" class="token-icon" src="" alt="" style="display:none;" />
-              <select id="token-select">
+              <span class="token-label" id="mint-price">-- PAS</span>
+              <!-- native token — no dropdown needed -->
                 <option value="" disabled selected>Loading tokens...</option>
               </select>
             </div>
@@ -224,13 +220,13 @@
 
             <!-- Action buttons -->
             <div class="action-row">
-              <button type="button" id="btn-approve" class="btn btn-accent btn-block" style="display:none;">Approve Token</button>
+              <!-- No approval needed — native token payment -->
               <button type="button" id="btn-submit" class="btn btn-primary btn-block" disabled>Send the Gag</button>
             </div>
 
             <p class="form-hint">
               Approval grants the contract permission to pull the exact mint price — no unlimited approvals.
-              Supports Basenames (.base.eth), ENS (.eth), and Unstoppable Domains resolution.
+              Enter the recipient's Ethereum-compatible address (0x...).
             </p>
           </form>
 
@@ -258,14 +254,6 @@
           <div id="share-panel" class="share-panel" style="display:none;">
             <p class="share-label">Spread the chaos:</p>
             <div class="share-buttons">
-              <button class="share-btn share-farcaster" id="btn-share-farcaster" title="Cast on Farcaster">
-                <svg width="16" height="16" viewBox="0 0 1000 1000" fill="currentColor"><path d="M257.778 155.556H742.222V844.444H671.111V528.889H670.414C662.554 441.677 589.258 373.333 500 373.333C410.742 373.333 337.446 441.677 329.586 528.889H328.889V844.444H257.778V155.556Z"/><path d="M128.889 253.333L157.778 351.111H182.222V746.667C169.949 746.667 160 756.616 160 768.889V795.556H155.556C143.283 795.556 133.333 805.505 133.333 817.778V844.444H382.222V817.778C382.222 805.505 372.273 795.556 360 795.556H355.556V768.889C355.556 756.616 345.606 746.667 333.333 746.667H306.667V253.333H128.889Z"/><path d="M693.333 746.667C681.06 746.667 671.111 756.616 671.111 768.889V795.556H666.667C654.394 795.556 644.444 805.505 644.444 817.778V844.444H893.333V817.778C893.333 805.505 883.384 795.556 871.111 795.556H866.667V768.889C866.667 756.616 856.717 746.667 844.444 746.667V351.111H868.889L897.778 253.333H720V746.667H693.333Z"/></svg>
-                Farcaster
-              </button>
-              <button class="share-btn share-lens" id="btn-share-lens" title="Post on Lens">
-                <svg width="16" height="16" viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="8"/><circle cx="50" cy="50" r="18"/></svg>
-                Lens
-              </button>
               <button class="share-btn share-x" id="btn-share-x" title="Post on X">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 X / Twitter
@@ -296,7 +284,7 @@
           </p>
           <p>
             This is intentional.
-            Giggles and Gags is designed to stick until the target decides it's worth paying to delete.
+            DotRot is designed to stick until the target decides it's worth paying to delete.
           </p>
         </div>
         <div class="panel info-panel">
@@ -349,10 +337,10 @@
             </div>
 
             <!-- Payment token selector -->
-            <label for="burn-token-select">Payment Token</label>
+            <label>Burn Fee</label>
             <div class="token-select-row">
-              <img id="burn-token-icon" class="token-icon" src="" alt="" style="display:none;" />
-              <select id="burn-token-select">
+              <span class="token-label" id="burn-fee-display">-- PAS</span>
+              <!-- native token — no dropdown needed -->
                 <option value="" disabled selected>Loading tokens...</option>
               </select>
             </div>
@@ -362,12 +350,12 @@
 
             <!-- Action buttons -->
             <div class="action-row">
-              <button type="button" id="btn-burn-approve" class="btn btn-accent btn-block" style="display:none;">Approve Token</button>
+              <!-- No approval needed — native token payment -->
               <button type="button" id="btn-burn" class="btn btn-danger btn-block" disabled>Burn This Gag</button>
             </div>
 
             <p class="form-hint">
-              You must own the token to burn it. The burn fee is paid in the stablecoin you choose.
+              You must own the token to burn it. The burn fee is paid in PAS.
               Once burned, the NFT is gone forever.
             </p>
           </form>
@@ -390,8 +378,8 @@
             <div class="burn-step">
               <span class="burn-step-num">02</span>
               <div>
-                <h4>Pick a Stablecoin</h4>
-                <p>Choose which supported stablecoin to pay the burn fee with. The price is fixed per token.</p>
+                <h4>Pay with PAS</h4>
+                <p>The burn fee is paid in PAS tokens.</p>
               </div>
             </div>
             <div class="burn-step">
@@ -467,11 +455,11 @@
         <div class="lore-card fade-in">
           <div class="lore-icon">&#x26D3;</div>
           <h3>Fully On-Chain</h3>
-          <p>Metadata, SVG, attributes — everything lives on Base. No IPFS, no CDN, no single point of failure. Permanent damage.</p>
+          <p>Metadata and SVG artwork stored on IPFS via Bulletin TransactionStorage. Soulbound tokens live on Polkadot Asset Hub.</p>
         </div>
         <div class="lore-card fade-in">
           <div class="lore-icon">&#x1F4A1;</div>
-          <h3>Stablecoin Powered</h3>
+          <h3>Native Token Powered</h3>
           <p>Pay with USDC, USDS, USDe, GHO, or crvUSD. No volatile gas games. The price of chaos is denominated in real money.</p>
         </div>
       </div>
@@ -512,7 +500,7 @@
           <div class="panel gag-page-explain">
             <p><strong>This NFT is non-transferable.</strong></p>
             <p>The only way to remove it is to pay the burn fee. This is intentional.</p>
-            <p class="note">Randomly assigned chaos — powered by stablecoins and poor judgment.</p>
+            <p class="note">Randomly assigned chaos — powered by PAS tokens and poor judgment.</p>
           </div>
 
           <!-- Burn CTA (shown if current wallet owns it) -->
@@ -524,14 +512,6 @@
           <div class="gag-page-share">
             <p class="share-label">Share the damage:</p>
             <div class="share-buttons">
-              <button class="share-btn share-farcaster" id="btn-share-gag-fc" title="Cast on Farcaster">
-                <svg width="16" height="16" viewBox="0 0 1000 1000" fill="currentColor"><path d="M257.778 155.556H742.222V844.444H671.111V528.889H670.414C662.554 441.677 589.258 373.333 500 373.333C410.742 373.333 337.446 441.677 329.586 528.889H328.889V844.444H257.778V155.556Z"/><path d="M128.889 253.333L157.778 351.111H182.222V746.667C169.949 746.667 160 756.616 160 768.889V795.556H155.556C143.283 795.556 133.333 805.505 133.333 817.778V844.444H382.222V817.778C382.222 805.505 372.273 795.556 360 795.556H355.556V768.889C355.556 756.616 345.606 746.667 333.333 746.667H306.667V253.333H128.889Z"/><path d="M693.333 746.667C681.06 746.667 671.111 756.616 671.111 768.889V795.556H666.667C654.394 795.556 644.444 805.505 644.444 817.778V844.444H893.333V817.778C893.333 805.505 883.384 795.556 871.111 795.556H866.667V768.889C866.667 756.616 856.717 746.667 844.444 746.667V351.111H868.889L897.778 253.333H720V746.667H693.333Z"/></svg>
-                Farcaster
-              </button>
-              <button class="share-btn share-lens" id="btn-share-gag-lens" title="Post on Lens">
-                <svg width="16" height="16" viewBox="0 0 100 100" fill="currentColor"><circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="8"/><circle cx="50" cy="50" r="18"/></svg>
-                Lens
-              </button>
               <button class="share-btn share-x" id="btn-share-gag-x" title="Post on X">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                 X / Twitter
@@ -565,7 +545,7 @@
         <div class="trust-card panel">
           <span class="trust-icon">&#x1F50D;</span>
           <h3>Verified &amp; Open Source</h3>
-          <p>The smart contract is fully verified on BaseScan. Read every line. The frontend source is public on GitHub. No hidden code, no obfuscation.</p>
+          <p>The smart contract is fully verified on Blockscout. Read every line. The frontend source is public on GitHub. No hidden code, no obfuscation.</p>
         </div>
         <!-- Trust signal 2 -->
         <div class="trust-card panel">
@@ -576,14 +556,14 @@
         <!-- Trust signal 3 -->
         <div class="trust-card panel">
           <span class="trust-icon">&#x1F4B5;</span>
-          <h3>Stablecoins Only</h3>
+          <h3>PAS Token Only</h3>
           <p>No speculative token. You pay in USDC, USDS, USDe, GHO, or crvUSD. The price of chaos is fixed at $1 to mint and $2 to burn. You always know exactly what you are spending.</p>
         </div>
         <!-- Trust signal 4 -->
         <div class="trust-card panel">
           <span class="trust-icon">&#x26D3;</span>
           <h3>Fully On-Chain</h3>
-          <p>Metadata, SVG artwork, and messages all live on Base. No IPFS dependency, no off-chain server. If this website disappears, your tokens (and their damage) survive forever.</p>
+          <p>Token data lives on Polkadot Asset Hub. SVG artwork is stored on IPFS via Bulletin TransactionStorage. If this website disappears, your tokens (and their damage) survive.</p>
         </div>
         <!-- Trust signal 5 -->
         <div class="trust-card panel">
@@ -595,7 +575,7 @@
         <div class="trust-card panel">
           <span class="trust-icon">&#x1F310;</span>
           <h3>ENS-Resolved Frontend</h3>
-          <p>This site is served through <strong>gigglesandgags.eth</strong> via ENS contenthash. No centralized hosting, no admin server, no kill switch. Static files on IPFS.</p>
+          <p>This site is served through <strong>dotrot.eth</strong> via ENS contenthash. No centralized hosting, no admin server, no kill switch. Static files on IPFS.</p>
         </div>
       </div>
 
@@ -604,7 +584,7 @@
         <div class="contract-info">
           <div class="info-row">
             <span class="meta-label">Network:</span>
-            <span class="chain-badge">Base</span>
+            <span class="chain-badge">Polkadot Asset Hub</span>
           </div>
           <div class="info-row">
             <span class="meta-label">Contract:</span>
@@ -612,13 +592,13 @@
             <button id="btn-copy-addr" class="btn-icon" title="Copy address">&#x2398;</button>
           </div>
           <div class="info-row">
-            <a id="basescan-link" href="#" target="_blank" rel="noopener" class="link">View on BaseScan &rarr;</a>
+            <a id="basescan-link" href="#" target="_blank" rel="noopener" class="link">View on Blockscout &rarr;</a>
             <span class="sep">|</span>
             <a id="github-link" href="#" target="_blank" rel="noopener" class="link">View Source on GitHub &rarr;</a>
           </div>
         </div>
         <div class="trust-audit-note">
-          <p>The contract uses OpenZeppelin's audited ERC-721, Ownable, Pausable, and SafeERC20 base contracts. Transfer functions (<code>approve</code>, <code>setApprovalForAll</code>, <code>transferFrom</code>) are permanently blocked — tokens are non-transferable by design. Burns bypass the pause so holders can always exit.</p>
+          <p>The contract uses OpenZeppelin's audited ERC-721, Ownable, Pausable, and Pausable base contracts. Transfer functions (<code>approve</code>, <code>setApprovalForAll</code>, <code>transferFrom</code>) are permanently blocked — tokens are non-transferable by design. Burns bypass the pause so holders can always exit.</p>
         </div>
       </div>
     </div>
@@ -630,21 +610,18 @@
   <footer id="footer">
     <div class="container footer-inner">
       <div class="footer-brand">
-        <span class="logo">GaG</span>
-        <span class="footer-ens" id="footer-ens">gigglesandgags.eth</span>
+        <span class="logo">DotRot</span>
+        <span class="footer-ens" id="footer-ens">dotrot.dot.li</span>
       </div>
       <div class="footer-social">
-        <a id="footer-warpcast" href="https://warpcast.com" target="_blank" rel="noopener" title="Farcaster" class="footer-social-link">Warpcast</a>
-        <a id="footer-lens" href="https://hey.xyz" target="_blank" rel="noopener" title="Lens" class="footer-social-link">Lens</a>
         <a id="footer-x" href="https://x.com" target="_blank" rel="noopener" title="X" class="footer-social-link">X</a>
-        <a id="footer-discord" href="https://discord.gg" target="_blank" rel="noopener" title="Discord" class="footer-social-link">Discord</a>
       </div>
       <div class="footer-links">
         <a id="footer-basescan" href="#" target="_blank" rel="noopener">Contract</a>
         <a id="footer-github" href="https://github.com" target="_blank" rel="noopener">Source</a>
       </div>
-      <p class="footer-tagline">randomly assigned chaos — funded by stablecoins, powered by poor judgment</p>
-      <p class="footer-contact">Contact: <a href="mailto:gigglesandgags@proton.me">gigglesandgags@proton.me</a></p>
+      <p class="footer-tagline">randomly assigned chaos — funded by PAS tokens, powered by poor judgment</p>
+      <p class="footer-contact">Contact: <a href="mailto:dotrot@proton.me">dotrot@proton.me</a></p>
     </div>
   </footer>
 
@@ -652,8 +629,6 @@
   <!--  SCRIPTS                                                      -->
   <!-- ============================================================ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js" crossorigin="anonymous"></script>
-  <!-- Farcaster Mini App SDK (UMD — exposes miniapp.sdk globally) -->
-  <script src="https://cdn.jsdelivr.net/npm/@farcaster/miniapp-sdk/dist/index.min.js"></script>
   <script src="config.js"></script>
   <script src="abi.js"></script>
   <script src="app.js"></script>

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {IGigglesAndGagsEvents} from "./IGigglesAndGagsEvents.sol";
+import {IDotRotEvents} from "./IDotRotEvents.sol";
 
 /**
- * @title GigglesAndGagsStructs
- * @notice Shared data structures for the Giggles and Gags collection.
- * @dev Also inherits `IGigglesAndGagsEvents` (and transitively `IGigglesAndGagsErrors`)
+ * @title DotRotStructs
+ * @notice Shared data structures for the DotRot collection.
+ * @dev Also inherits `IDotRotEvents` (and transitively `IDotRotErrors`)
  *      so that the main contract gets all custom errors and events through a single inheritance path.
  */
-contract GigglesAndGagsStructs is IGigglesAndGagsEvents {
+contract DotRotStructs is IDotRotEvents {
     /**
      * @notice Represents a pending mint intent stored in one of the queue slots.
      * @param recipient The address that will receive the minted NFT.

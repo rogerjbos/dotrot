@@ -1,0 +1,13 @@
+{
+  "name": "gag-metadata-listener",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "generate": "node generate.js"
+  },
+  "dependencies": {
+    "ethers": "^6.14.0"
+  }
+}

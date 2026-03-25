@@ -1,0 +1,44 @@
+{
+  "name": "DotRot #0",
+  "description": "DotRot is a queue-minted on-chain gag collectible. The message and image are rendered fully on-chain.",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Forum Static"
+    },
+    {
+      "trait_type": "Frame",
+      "value": "Soft Coping"
+    },
+    {
+      "trait_type": "Tone",
+      "value": "Meltdown"
+    },
+    {
+      "trait_type": "Mood",
+      "value": "Spicy"
+    },
+    {
+      "trait_type": "Badge",
+      "value": "ON-CHAIN"
+    },
+    {
+      "trait_type": "Caption",
+      "value": "randomly assigned chaos"
+    },
+    {
+      "trait_type": "Layout",
+      "value": "Single Line"
+    },
+    {
+      "trait_type": "Rare",
+      "value": "No"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "Length",
+      "value": 6
+    }
+  ],
+  "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDEwMDAiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjEwMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iRG90Um90Ij48c3R5bGU+LmJnLW1haW57ZmlsbDojMDkwOTA5O30uc3Ryb2tlLW1haW57c3Ryb2tlOiNGNEYxRUE7c3Ryb2tlLXdpZHRoOjY7ZmlsbDpub25lO30ubWFpbi10ZXh0e2ZpbGw6I0Y0RjFFQTtmb250LWZhbWlseTptb25vc3BhY2U7Zm9udC13ZWlnaHQ6NzAwO2xldHRlci1zcGFjaW5nOjFweDt9LmNhcHRpb24tdGV4dHtmaWxsOiM4QkU5RkQ7Zm9udC1mYW1pbHk6bW9ub3NwYWNlO2ZvbnQtc2l6ZToyMHB4O2xldHRlci1zcGFjaW5nOjJweDt9LmZvb3Rlci10ZXh0e2ZpbGw6I0ZGQzk0QTtmb250LWZhbWlseTptb25vc3BhY2U7Zm9udC1zaXplOjIycHg7bGV0dGVyLXNwYWNpbmc6M3B4O30ub3V0bGluZS10ZXh0e3BhaW50LW9yZGVyOnN0cm9rZTtzdHJva2U6IzJBMjQxODtzdHJva2Utd2lkdGg6ODtzdHJva2UtbGluZWpvaW46cm91bmQ7fTwvc3R5bGU+PHJlY3Qgd2lkdGg9IjEwMDAiIGhlaWdodD0iMTAwMCIgY2xhc3M9ImJnLW1haW4iLz48ZyBvcGFjaXR5PSIwLjM4IiBmaWxsPSIjQTc4QkZBIj48Y2lyY2xlIGN4PSI2NTUiIGN5PSI1MTgiIHI9IjYiLz48Y2lyY2xlIGN4PSIxODQiIGN5PSIyNjciIHI9IjUiLz48Y2lyY2xlIGN4PSIxMTkiIGN5PSI0NzQiIHI9IjYiLz48Y2lyY2xlIGN4PSIyNDUiIGN5PSI0NDAiIHI9IjciLz48Y2lyY2xlIGN4PSI4NDIiIGN5PSI3MDMiIHI9IjYiLz48Y2lyY2xlIGN4PSI2MDQiIGN5PSIxNjQiIHI9IjQiLz48Y2lyY2xlIGN4PSI1ODYiIGN5PSIxODMiIHI9IjMiLz48Y2lyY2xlIGN4PSI4NDYiIGN5PSI0NTgiIHI9IjQiLz48Y2lyY2xlIGN4PSI0NjUiIGN5PSI2ODYiIHI9IjMiLz48Y2lyY2xlIGN4PSIyNDYiIGN5PSIyMzMiIHI9IjQiLz48Y2lyY2xlIGN4PSIzNTMiIGN5PSI3MjkiIHI9IjMiLz48Y2lyY2xlIGN4PSI4NzkiIGN5PSI2MzgiIHI9IjQiLz48Y2lyY2xlIGN4PSI0NjkiIGN5PSI3NDEiIHI9IjciLz48Y2lyY2xlIGN4PSI0MzIiIGN5PSI0ODUiIHI9IjMiLz48Y2lyY2xlIGN4PSIxOTciIGN5PSI2NjAiIHI9IjMiLz48Y2lyY2xlIGN4PSI0MzUiIGN5PSI3NDEiIHI9IjUiLz48L2c+PHJlY3QgeD0iNTIiIHk9IjUyIiB3aWR0aD0iODk2IiBoZWlnaHQ9Ijg5NiIgcng9IjM2IiBjbGFzcz0ic3Ryb2tlLW1haW4iLz48cmVjdCB4PSI3NCIgeT0iNzQiIHdpZHRoPSI4NTIiIGhlaWdodD0iODM2IiByeD0iMjgiIHN0cm9rZT0iI0ZGQzk0QSIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjU1Ii8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTA4IDEwOCkiPjxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSIxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjRkZDOTRBIiBzdHJva2Utd2lkdGg9IjQiLz48Y2lyY2xlIGN4PSI0MiIgY3k9IjAiIHI9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkM5NEEiIHN0cm9rZS13aWR0aD0iNCIvPjx0ZXh0IHg9Ijg0IiB5PSI4IiBmaWxsPSIjRjRGMUVBIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjMwIiBmb250LXdlaWdodD0iOTAwIj5Eb3RSb3Q8L3RleHQ+PC9nPjxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDc0MCA5MCkiPjxyZWN0IHg9IjAiIHk9IjAiIHdpZHRoPSIxNzAiIGhlaWdodD0iNDQiIHJ4PSIyMiIgZmlsbD0iI0ZGQzk0QSIvPjx0ZXh0IHg9Ijg1IiB5PSIyOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzExMTExMSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9IjkwMCI+T04tQ0hBSU48L3RleHQ+PC9nPjx0ZXh0IHg9IjUwMCIgeT0iMzQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGNsYXNzPSJmb290ZXItdGV4dCI+ZG90cm90LmRvdC5saTwvdGV4dD48dGV4dCB4PSI1MDAiIHk9IjQ4NCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgY2xhc3M9Im1haW4tdGV4dCBvdXRsaW5lLXRleHQiIGZvbnQtc2l6ZT0iMTEwIj5nbSBzZXI8L3RleHQ+PHRleHQgeD0iNTAwIiB5PSI4NzUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGNsYXNzPSJjYXB0aW9uLXRleHQiPnJhbmRvbWx5IGFzc2lnbmVkIGNoYW9zPC90ZXh0Pjx0ZXh0IHg9IjUwMCIgeT0iOTgyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBjbGFzcz0iZm9vdGVyLXRleHQiPkRPVFJPVDwvdGV4dD48dGV4dCB4PSI3NiIgeT0iOTgyIiB0ZXh0LWFuY2hvcj0ic3RhcnQiIGNsYXNzPSJmb290ZXItdGV4dCI+IzA8L3RleHQ+PC9zdmc+"
+}

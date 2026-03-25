@@ -1,25 +1,23 @@
 <div align="center">
 
-# Giggles & Gags
+# DotRot
 
-**Non-transferable prank NFTs on Base.**
-**15-slot chaos buffer · on-chain SVG metadata · stablecoin powered.**
+**Non-transferable prank NFTs on Polkadot Asset Hub.**
+**15-slot chaos buffer · off-chain SVG via Bulletin IPFS · PAS token powered.**
 
-$1 to curse. $2 to escape.
+1 PAS to curse. 2 PAS to escape.
 
-[![Website](https://img.shields.io/badge/Website-gigglesandgags.eth.limo-ffcc00?style=for-the-badge&logo=ethereum&logoColor=white)](https://gigglesandgags.eth.limo)
-[![Contract](https://img.shields.io/badge/BaseScan-Verified-0052FF?style=for-the-badge&logo=ethereum&logoColor=white)](https://basescan.org/address/0x96b757bDcECd43624B0CD5f5E7B96E57A642484B)
-
-[![X / Twitter](https://img.shields.io/badge/X-@GigglsNGags-000000?style=flat-square&logo=x&logoColor=white)](https://x.com/GigglsNGags)
-[![Farcaster](https://img.shields.io/badge/Farcaster-gigglesandgags-855DCD?style=flat-square&logo=farcaster&logoColor=white)](https://warpcast.com/gigglesandgags)
-[![Lens](https://img.shields.io/badge/Lens-gigglesandgags-00501e?style=flat-square&logo=lens&logoColor=white)](https://hey.xyz/u/gigglesandgags)
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/y3mS4weF)
+[![Website](https://img.shields.io/badge/Website-dotrot.dot.li-E6007A?style=for-the-badge)](https://dotrot.dot.li)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
-[![Solidity](https://img.shields.io/badge/Solidity-0.8.28-363636?style=flat-square&logo=solidity&logoColor=white)](https://soliditylang.org/)
-[![Base](https://img.shields.io/badge/Chain-Base-0052FF?style=flat-square)](https://base.org)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.27-363636?style=flat-square&logo=solidity&logoColor=white)](https://soliditylang.org/)
+[![Polkadot](https://img.shields.io/badge/Chain-Paseo_Asset_Hub-E6007A?style=flat-square)](https://docs.polkadot.com/smart-contracts/connect/)
 
 </div>
+
+---
+
+> **Fork notice:** DotRot is a port of [Giggles & Gags](https://github.com/GigglesAndGags/gag) (originally on Base) to the Polkadot ecosystem. The core slot-buffer game mechanic is preserved, with key changes: native PAS token payments instead of stablecoins, off-chain SVG rendering stored on Bulletin TransactionStorage (IPFS) instead of on-chain rendering, and .dot.li hosting instead of ENS.
 
 ---
 
@@ -28,62 +26,96 @@ Send a cursed on-chain message to any wallet. The slot buffer decides what mints
 ## How It Works
 
 1. You write a message and pick a victim (any wallet address).
-2. You pay in stablecoins (USDC, USDS, USDe, GHO, or crvUSD).
+2. You pay in PAS (native token on Paseo Asset Hub testnet).
 3. The contract randomly selects one of 15 slots. Whatever was in that slot gets minted now.
 4. Your message takes the slot's place, waiting for the next person to trigger it.
 
-Tokens are fully on-chain SVGs — metadata, artwork, and messages all live on Base. No IPFS dependency for token data.
+After minting, an off-chain listener generates the SVG artwork deterministically, uploads it to IPFS via Bulletin TransactionStorage, and writes the CID back to the contract.
 
 ## Architecture
 
 ```
 src/               Solidity contracts (Foundry)
-  render/          On-chain SVG renderer and metadata
+  render/Utils.sol Text validation library
 script/            Deploy scripts
-test/              Forge tests
+test/              Forge tests (124 passing)
 frontend/          Static frontend (vanilla JS + ethers.js)
-  build.js         Generates multi-page static site for IPFS
+  build.js         Generates multi-page static site for .dot.li
+listener/          Off-chain metadata service
+  renderer.js      JS port of the Solidity SVG renderer
+  index.js         Event listener + Bulletin uploader + CID writer
+  generate.js      Standalone SVG generator for testing
 ```
+
+## Changes from the Original
+
+| Aspect | Giggles & Gags (Base) | DotRot (Asset Hub) |
+|--------|----------------------|-------------------|
+| Chain | Base (8453) | Paseo Asset Hub (420420417) |
+| Payment | ERC-20 stablecoins | Native PAS tokens |
+| SVG rendering | On-chain (Solidity) | Off-chain (JS) + IPFS via Bulletin |
+| Metadata storage | On-chain base64 | IPFS CID reference |
+| Domain | gigglesandgags.eth.limo | dotrot.dot.li |
+| Name resolution | ENS / Basenames / UD | Direct address only |
+| Token symbol | GaG | DOTROT |
 
 ## Build
 
 ```bash
-forge build --via-ir
+forge build
 ```
 
 ## Test
 
 ```bash
-forge test --via-ir
+forge test
 ```
 
 ## Deploy
 
+### 1. Contract
+
 ```bash
-DEPLOYER_PRIVATE_KEY=0x... forge script script/DeployGigglesAndGags.s.sol \
-    --rpc-url https://mainnet.base.org \
-    --broadcast --verify --via-ir
+DEPLOYER_PRIVATE_KEY=0x... ./deploy-contract.sh
 ```
 
-## Frontend
+### 2. Set metadata updater
 
-The frontend is a static site designed for IPFS hosting via ENS contenthash. Build with:
+```bash
+cast send <CONTRACT> 'setMetadataUpdater(address)' <UPDATER_ADDRESS> \
+  --private-key $DEPLOYER_PRIVATE_KEY \
+  --rpc-url https://eth-rpc-testnet.polkadot.io/
+```
+
+### 3. Frontend
 
 ```bash
 cd frontend && node build.js
+DOTNS_MNEMONIC="..." ./deploy-dotli.sh dotrot
 ```
 
-Output goes to `dist/`. Upload to IPFS and set the ENS contenthash.
+### 4. Listener
+
+```bash
+cd listener && npm install
+RPC_URL=https://eth-rpc-testnet.polkadot.io/ \
+CONTRACT_ADDRESS=0x... \
+UPDATER_KEY=0x... \
+DOTNS_MNEMONIC="..." \
+node index.js
+```
+
+The listener can run on any server. Set `DOTNS_CLI="node ./cli.js"` if using a local copy of the dotns CLI instead of a global install.
 
 ## Contract
 
-The contract is verified on BaseScan. Key properties:
+Deployed on Paseo Asset Hub testnet. Key properties:
 
 - Non-transferable (soulbound) — `transferFrom`, `approve`, and `setApprovalForAll` permanently blocked
-- Stablecoin payments — exact approvals only, no unlimited allowances
+- Native token payments — no ERC-20 approvals needed
 - Burn-to-remove — recipients pay to delete, sender earns tribute (if non-anonymous)
-- Fully on-chain — SVG and metadata generated in Solidity, no off-chain dependencies
-- OpenZeppelin base — ERC-721, Ownable, Pausable, SafeERC20
+- Off-chain SVG — deterministic rendering uploaded to IPFS, contract stores CID reference
+- OpenZeppelin base — ERC-721, Ownable, Pausable
 
 ## License
 

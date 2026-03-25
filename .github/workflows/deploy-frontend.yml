@@ -1,0 +1,142 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      skip-cache:
+        description: 'Skip deployment cache and force redeploy'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  statuses: write
+  id-token: write
+
+concurrency:
+  group: deploy-frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Compute source hash
+        id: source-hash
+        run: echo "hash=$(find frontend -type f \( -name '*.js' -o -name '*.html' -o -name '*.css' -o -name '*.svg' -o -name '*.png' \) | sort | xargs sha256sum | sha256sum | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache build
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: dist
+          key: build-${{ steps.source-hash.outputs.hash }}
+
+      - name: Build frontend
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: node frontend/build.js
+
+      - name: Download ethers.js UMD bundle
+        if: steps.cache-build.outputs.cache-hit != 'true'
+        run: curl -sL -o dist/vendor/ethers.umd.min.js "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: dist
+          retention-days: 1
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    env:
+      DOMAIN: dotrot
+      BULLETIN_RPC: wss://paseo-bulletin-rpc.polkadot.io
+      DOTNS_RPC: wss://paseo-rpc.polkadot.io
+    steps:
+      - name: Checkout dotns-sdk
+        uses: actions/checkout@v4
+        with:
+          repository: paritytech/dotns-sdk
+          ref: main
+          path: dotns-sdk
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.2.6'
+
+      - name: Build dotns CLI
+        run: |
+          cd dotns-sdk
+          bun install
+          cd packages/cli
+          bun run build
+
+      - name: Authorize for Bulletin
+        run: |
+          ADDRESS=$(node dotns-sdk/packages/cli/dist/cli.js account address -m "$DOTNS_MNEMONIC" --rpc "$DOTNS_RPC")
+          node dotns-sdk/packages/cli/dist/cli.js bulletin authorize "$ADDRESS" -m "$DOTNS_MNEMONIC" --bulletin-rpc "$BULLETIN_RPC" --rpc "$DOTNS_RPC" || echo "Already authorized"
+        env:
+          DOTNS_MNEMONIC: ${{ secrets.DOTNS_MNEMONIC }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: build
+
+      - name: Upload to Bulletin
+        id: bulletin
+        run: |
+          RESULT=$(NODE_OPTIONS="--max-old-space-size=4096" node dotns-sdk/packages/cli/dist/cli.js bulletin upload ./build --json --parallel -m "$DOTNS_MNEMONIC" --bulletin-rpc "$BULLETIN_RPC" --rpc "$DOTNS_RPC")
+          CID=$(echo "$RESULT" | jq -r '.cid')
+          echo "cid=$CID" >> "$GITHUB_OUTPUT"
+          echo "Uploaded CID: $CID"
+        env:
+          DOTNS_MNEMONIC: ${{ secrets.DOTNS_MNEMONIC }}
+
+      - name: Register domain (if needed)
+        run: node dotns-sdk/packages/cli/dist/cli.js register domain --name "$DOMAIN" --status full -m "$DOTNS_MNEMONIC" --rpc "$DOTNS_RPC" 2>/dev/null || echo "Domain already registered"
+        env:
+          DOTNS_MNEMONIC: ${{ secrets.DOTNS_MNEMONIC }}
+
+      - name: Set content hash
+        run: node dotns-sdk/packages/cli/dist/cli.js content set "$DOMAIN" "${{ steps.bulletin.outputs.cid }}" -m "$DOTNS_MNEMONIC" --rpc "$DOTNS_RPC"
+        env:
+          DOTNS_MNEMONIC: ${{ secrets.DOTNS_MNEMONIC }}
+
+      - name: Verify deployment
+        run: node dotns-sdk/packages/cli/dist/cli.js content view "$DOMAIN" --rpc "$DOTNS_RPC"
+
+      - name: Summary
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+          ## Deployment Complete
+
+          | Property | Value |
+          |----------|-------|
+          | Domain | \`${DOMAIN}.dot\` |
+          | CID | \`${{ steps.bulletin.outputs.cid }}\` |
+          | URL | [https://${DOMAIN}.dot.li](https://${DOMAIN}.dot.li) |
+          EOF

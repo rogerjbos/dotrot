@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Giggles and Gags — Static Build Script
+ * DotRot — Static Build Script
  *
  * Generates a multi-page static site from the single-page source.
  * Each route gets its own index.html with route-specific meta tags,
@@ -25,9 +25,8 @@ const OUT_DIR = process.argv.includes("--out")
   ? path.resolve(process.argv[process.argv.indexOf("--out") + 1])
   : DEFAULT_OUT;
 
-const SITE_URL = "https://gigglesandgags.eth.limo";
-const MINIAPP_URL = "https://gag-blue-iota.vercel.app"; // Vercel host for mini app (no CSP frame-ancestors restriction)
-const ENS_NAME = "gigglesandgags.eth";
+const SITE_URL = "https://dotrot.dot.li";
+const DOMAIN_NAME = "dotrot.dot.li";
 
 // Assets to copy verbatim
 const COPY_FILES = ["app.js", "config.js", "abi.js", "style.css", "favicon.svg"];
@@ -38,15 +37,15 @@ const COPY_FILES = ["app.js", "config.js", "abi.js", "style.css", "favicon.svg"]
 const ROUTES = {
   "/": {
     page: "home",
-    title: "Giggles and Gags — Send a cursed onchain message",
+    title: "DotRot — Send a cursed onchain message",
     description:
-      "A non-transferable prank NFT powered by stablecoins and randomly assigned chaos. On Base.",
+      "A non-transferable prank NFT powered by PAS tokens and randomly assigned chaos. On Polkadot.",
     ogImage: "og/default.png",
     fcButton: "Open App",
   },
   "/send": {
     page: "send",
-    title: "Send a Gag — Giggles and Gags",
+    title: "Send a Gag — DotRot",
     description:
       "Fund the chaos buffer. Your gag may mint later. Someone else's may mint now.",
     ogImage: "og/default.png",
@@ -55,7 +54,7 @@ const ROUTES = {
   },
   "/burn": {
     page: "burn",
-    title: "Burn a Gag — Giggles and Gags",
+    title: "Burn a Gag — DotRot",
     description:
       "Got pranked? Pay the burn fee to remove a non-transferable gag from your wallet.",
     ogImage: "og/default.png",
@@ -64,7 +63,7 @@ const ROUTES = {
   },
   "/claim": {
     page: "claim",
-    title: "Claim Burn Tribute — Giggles and Gags",
+    title: "Claim Burn Tribute — DotRot",
     description:
       "If your attributable gag got burned, collect your cut of the burn fee.",
     ogImage: "og/default.png",
@@ -73,7 +72,7 @@ const ROUTES = {
   },
   "/how": {
     page: "how",
-    title: "How Giggles and Gags Works",
+    title: "How DotRot Works",
     description:
       "This is not a normal queue. It is a fixed-size chaos buffer for wallet-to-wallet onchain gags.",
     ogImage: "og/default.png",
@@ -82,7 +81,7 @@ const ROUTES = {
   },
   "/gag": {
     page: "gag",
-    title: "Giggles and Gags — Token",
+    title: "DotRot — Token",
     description:
       "Randomly assigned chaos, permanently attached until someone pays to burn it.",
     ogImage: "og/default.png",
@@ -103,10 +102,10 @@ function generateOGImage() {
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
   <rect x="30" y="30" width="1140" height="570" rx="16" fill="none" stroke="#ffcc00" stroke-width="2" opacity="0.3"/>
-  <text x="600" y="240" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="72" font-weight="800">Giggles &amp; Gags</text>
-  <text x="600" y="310" text-anchor="middle" fill="#888" font-family="monospace" font-size="24">on-chain social damage on Base</text>
-  <text x="600" y="380" text-anchor="middle" fill="#555" font-family="monospace" font-size="18">non-transferable prank NFTs · stablecoin powered · slot buffer chaos</text>
-  <text x="600" y="560" text-anchor="middle" fill="#333" font-family="monospace" font-size="14">${ENS_NAME}</text>
+  <text x="600" y="240" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="72" font-weight="800">DotRot</text>
+  <text x="600" y="310" text-anchor="middle" fill="#888" font-family="monospace" font-size="24">on-chain social damage on Polkadot</text>
+  <text x="600" y="380" text-anchor="middle" fill="#555" font-family="monospace" font-size="18">non-transferable prank NFTs · PAS powered · slot buffer chaos</text>
+  <text x="600" y="560" text-anchor="middle" fill="#333" font-family="monospace" font-size="14">${DOMAIN_NAME}</text>
 </svg>`;
 }
 
@@ -116,24 +115,6 @@ function generateOGImage() {
 function buildMetaTags(route, routeConfig) {
   const canonicalUrl = route === "/" ? SITE_URL : `${SITE_URL}${route}`;
   const imageUrl = `${SITE_URL}/${routeConfig.ogImage}`;
-
-  // Farcaster Mini App embed meta (current format)
-  // URL points to Vercel host to avoid eth.limo CSP frame-ancestors restriction
-  const miniAppLaunchUrl = route === "/" ? MINIAPP_URL : `${MINIAPP_URL}${route}`;
-  const fcMiniappJson = JSON.stringify({
-    version: "1",
-    imageUrl: imageUrl,
-    button: {
-      title: routeConfig.fcButton || "Open App",
-      action: {
-        type: "launch_miniapp",
-        name: "Giggles and Gags",
-        url: miniAppLaunchUrl,
-        splashImageUrl: `${SITE_URL}/og/splash-200.png`,
-        splashBackgroundColor: "#07080c",
-      },
-    },
-  });
 
   return `  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -148,16 +129,13 @@ function buildMetaTags(route, routeConfig) {
   <meta property="og:image" content="${imageUrl}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:site_name" content="Giggles and Gags" />
+  <meta property="og:site_name" content="DotRot" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${routeConfig.title}" />
   <meta name="twitter:description" content="${routeConfig.description}" />
   <meta name="twitter:image" content="${imageUrl}" />
-
-  <!-- Farcaster Mini App Embed -->
-  <meta name="fc:miniapp" content='${fcMiniappJson}' />
 
   <!-- Canonical -->
   <link rel="canonical" href="${canonicalUrl}" />
@@ -187,9 +165,6 @@ function buildPageHTML(sourceHTML, route, routeConfig) {
   // Build the full head
   const fullHead = `<head>
 ${headContent}
-
-  <!-- Base Mini App -->
-  <meta name="base:app_id" content="69b2ba685600c39dcfa4fe3f" />
 
   <!-- Favicon -->
   <link rel="icon" href="${assetPrefix}favicon.svg" type="image/svg+xml" />
@@ -231,36 +206,7 @@ ${headContent}
   return html;
 }
 
-// ---------------------------------------------------------------------------
-//  Farcaster manifest
-// ---------------------------------------------------------------------------
-function buildFarcasterManifest() {
-  return JSON.stringify(
-    {
-      accountAssociation: {
-        header: "eyJmaWQiOjI5MDI0OTMsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHg3MTYwMDJBNEUwMTRDZDQ0ODliMzZlQUE5QUU2RjI3NGUxNDFiOTMzIn0",
-        payload: "eyJkb21haW4iOiJnaWdnbGVzYW5kZ2Fncy5ldGgubGltbyJ9",
-        signature: "SogFqpyG095j7yi3JsYOqu2qQL/wQ2LPyPTcrmMkRz4QkafSmag+uhfsuLNImdjwkfpnW6ygEN32F4NZ03B1Zhs=",
-      },
-      frame: {
-        version: "1",
-        name: "Giggles and Gags",
-        iconUrl: `${SITE_URL}/og/icon-1024.png`,
-        homeUrl: MINIAPP_URL,
-        imageUrl: `${SITE_URL}/og/default.png`,
-        buttonTitle: "Unleash Chaos",
-        splashImageUrl: `${SITE_URL}/og/splash-200.png`,
-        splashBackgroundColor: "#07080c",
-        description:
-          "Non-transferable prank NFTs. Send a cursed message, fund the chaos, and the slot buffer decides what mints next. Pay to burn. Collect tribute.",
-        primaryCategory: "social",
-        tags: ["nft", "prank", "base", "social", "meme"],
-      },
-    },
-    null,
-    2
-  );
-}
+// (Farcaster manifest removed — not needed for Polkadot deployment)
 
 // ---------------------------------------------------------------------------
 //  Icon / splash SVGs
@@ -279,7 +225,7 @@ function generateIcon512() {
 function generateSplash200() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
   <rect width="200" height="200" fill="#07080c"/>
-  <text x="100" y="90" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="48" font-weight="800">GaG</text>
+  <text x="100" y="90" text-anchor="middle" fill="#ffcc00" font-family="monospace" font-size="36" font-weight="800">DotRot</text>
   <text x="100" y="130" text-anchor="middle" fill="#555" font-family="monospace" font-size="12">on-chain social damage</text>
 </svg>`;
 }
@@ -301,7 +247,6 @@ function main() {
     path.join(OUT_DIR, "claim"),
     path.join(OUT_DIR, "how"),
     path.join(OUT_DIR, "gag"),
-    path.join(OUT_DIR, ".well-known"),
     path.join(OUT_DIR, "og"),
     path.join(OUT_DIR, "vendor"),
   ];
@@ -345,13 +290,6 @@ function main() {
   console.log("  ✓ og/default.svg");
   console.log("  ✓ og/icon-512.svg");
   console.log("  ✓ og/splash-200.svg");
-
-  // Farcaster manifest
-  fs.writeFileSync(
-    path.join(OUT_DIR, ".well-known", "farcaster.json"),
-    buildFarcasterManifest()
-  );
-  console.log("  ✓ .well-known/farcaster.json");
 
   // Vendor: download ethers note
   fs.writeFileSync(

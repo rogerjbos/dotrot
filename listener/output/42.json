@@ -1,0 +1,44 @@
+{
+  "name": "Giggles and Gags #42",
+  "description": "Giggles and Gags is a queue-minted on-chain gag collectible. The message and image are rendered fully on-chain.",
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Forum Static"
+    },
+    {
+      "trait_type": "Frame",
+      "value": "Badge of Shame"
+    },
+    {
+      "trait_type": "Tone",
+      "value": "Meltdown"
+    },
+    {
+      "trait_type": "Mood",
+      "value": "Terminal"
+    },
+    {
+      "trait_type": "Badge",
+      "value": "QUEUE MAXXED"
+    },
+    {
+      "trait_type": "Caption",
+      "value": "randomly assigned chaos"
+    },
+    {
+      "trait_type": "Layout",
+      "value": "Two Lines"
+    },
+    {
+      "trait_type": "Rare",
+      "value": "No"
+    },
+    {
+      "display_type": "number",
+      "trait_type": "Length",
+      "value": 25
+    }
+  ],
+  "image": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAwIDEwMDAiIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjEwMDAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iR2lnZ2xlcyBhbmQgR2FncyI+PHN0eWxlPi5iZy1tYWlue2ZpbGw6IzA5MDkwOTt9LnN0cm9rZS1tYWlue3N0cm9rZTojRjRGMUVBO3N0cm9rZS13aWR0aDo2O2ZpbGw6bm9uZTt9Lm1haW4tdGV4dHtmaWxsOiNGNEYxRUE7Zm9udC1mYW1pbHk6bW9ub3NwYWNlO2ZvbnQtd2VpZ2h0OjcwMDtsZXR0ZXItc3BhY2luZzoxcHg7fS5jYXB0aW9uLXRleHR7ZmlsbDojOEJFOUZEO2ZvbnQtZmFtaWx5Om1vbm9zcGFjZTtmb250LXNpemU6MjBweDtsZXR0ZXItc3BhY2luZzoycHg7fS5mb290ZXItdGV4dHtmaWxsOiNGRkM5NEE7Zm9udC1mYW1pbHk6bW9ub3NwYWNlO2ZvbnQtc2l6ZToyMnB4O2xldHRlci1zcGFjaW5nOjNweDt9Lm91dGxpbmUtdGV4dHtwYWludC1vcmRlcjpzdHJva2U7c3Ryb2tlOiMyQTI0MTg7c3Ryb2tlLXdpZHRoOjg7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO308L3N0eWxlPjxyZWN0IHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjEwMDAiIGNsYXNzPSJiZy1tYWluIi8+PGcgb3BhY2l0eT0iMC4zOCIgZmlsbD0iI0E3OEJGQSI+PGNpcmNsZSBjeD0iMjQ2IiBjeT0iNjM5IiByPSI2Ii8+PGNpcmNsZSBjeD0iNTAyIiBjeT0iNjEwIiByPSI2Ii8+PGNpcmNsZSBjeD0iODMzIiBjeT0iMjY5IiByPSI2Ii8+PGNpcmNsZSBjeD0iNDYyIiBjeT0iNDI0IiByPSI0Ii8+PGNpcmNsZSBjeD0iODk1IiBjeT0iODI5IiByPSIzIi8+PGNpcmNsZSBjeD0iNzc0IiBjeT0iNjcyIiByPSI4Ii8+PGNpcmNsZSBjeD0iNTIyIiBjeT0iMTMxIiByPSI2Ii8+PGNpcmNsZSBjeD0iMzEyIiBjeT0iNjg3IiByPSI4Ii8+PGNpcmNsZSBjeD0iNzcxIiBjeT0iNDYyIiByPSI2Ii8+PGNpcmNsZSBjeD0iODQ0IiBjeT0iNDYxIiByPSI2Ii8+PGNpcmNsZSBjeD0iNzc2IiBjeT0iNTg2IiByPSI2Ii8+PGNpcmNsZSBjeD0iODY0IiBjeT0iMzA0IiByPSI4Ii8+PGNpcmNsZSBjeD0iMzc0IiBjeT0iMzEwIiByPSI2Ii8+PGNpcmNsZSBjeD0iODU5IiBjeT0iMTc3IiByPSI3Ii8+PGNpcmNsZSBjeD0iMzI2IiBjeT0iNDUyIiByPSI0Ii8+PGNpcmNsZSBjeD0iNzk1IiBjeT0iMzUxIiByPSI4Ii8+PC9nPjxyZWN0IHg9IjU2IiB5PSI1NiIgd2lkdGg9Ijg4OCIgaGVpZ2h0PSI4ODgiIHJ4PSIxMiIgY2xhc3M9InN0cm9rZS1tYWluIi8+PHBhdGggZD0iTTE4MCA3NEg4MjAiIHN0cm9rZT0iI0ZGQzk0QSIgc3Ryb2tlLXdpZHRoPSI4IiBvcGFjaXR5PSIwLjgiLz48cGF0aCBkPSJNMTgwIDkwOEg4MjAiIHN0cm9rZT0iI0ZGQzk0QSIgc3Ryb2tlLXdpZHRoPSI4IiBvcGFjaXR5PSIwLjgiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMDggMTA4KSI+PGNpcmNsZSBjeD0iMCIgY3k9IjAiIHI9IjE4IiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkM5NEEiIHN0cm9rZS13aWR0aD0iNCIvPjxjaXJjbGUgY3g9IjQyIiBjeT0iMCIgcj0iMTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0ZGQzk0QSIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHRleHQgeD0iODQiIHk9IjgiIGZpbGw9IiNGNEYxRUEiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMzAiIGZvbnQtd2VpZ2h0PSI5MDAiPkdhRzwvdGV4dD48L2c+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNzQwIDkwKSI+PHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjE3MCIgaGVpZ2h0PSI0NCIgcng9IjIyIiBmaWxsPSIjRkZDOTRBIi8+PHRleHQgeD0iODUiIHk9IjI4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMTExMTExIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjE4IiBmb250LXdlaWdodD0iOTAwIj5RVUVVRSBNQVhYRUQ8L3RleHQ+PC9nPjx0ZXh0IHg9IjUwMCIgeT0iMzQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGNsYXNzPSJmb290ZXItdGV4dCI+Z2lnZ2xlc2FuZGdhZ3MuZXRoPC90ZXh0Pjx0ZXh0IHg9IjUwMCIgeT0iNDQ4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiBjbGFzcz0ibWFpbi10ZXh0IG91dGxpbmUtdGV4dCIgZm9udC1zaXplPSI1MCI+V0lERSBDSEFSQUNURVJTOjwvdGV4dD48dGV4dCB4PSI1MDAiIHk9IjU2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZG9taW5hbnQtYmFzZWxpbmU9Im1pZGRsZSIgY2xhc3M9Im1haW4tdGV4dCBvdXRsaW5lLXRleHQiIGZvbnQtc2l6ZT0iNTAiPldNTU0gQEBAPC90ZXh0Pjx0ZXh0IHg9IjUwMCIgeT0iODc1IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBjbGFzcz0iY2FwdGlvbi10ZXh0Ij5yYW5kb21seSBhc3NpZ25lZCBjaGFvczwvdGV4dD48dGV4dCB4PSI1MDAiIHk9Ijk4MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgY2xhc3M9ImZvb3Rlci10ZXh0Ij5HSUdHTEVTIEFORCBHQUdTPC90ZXh0Pjx0ZXh0IHg9Ijc2IiB5PSI5ODIiIHRleHQtYW5jaG9yPSJzdGFydCIgY2xhc3M9ImZvb3Rlci10ZXh0Ij4jNDI8L3RleHQ+PC9zdmc+"
+}
