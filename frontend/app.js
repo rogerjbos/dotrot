@@ -387,9 +387,8 @@ async function loadPrices() {
     // Update displays
     updateMintPriceDisplay();
 
-    const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
     const burnEl = document.getElementById("burn-fee");
-    if (burnEl) burnEl.textContent = formatPAS(burnFeeAmount) + " " + nativeSymbol;
+    if (burnEl) burnEl.textContent = "$2";
     const burnFeeDisplay = document.getElementById("burn-fee-display");
     if (burnFeeDisplay) {
       const burnSelect = document.getElementById("burn-payment-token");
