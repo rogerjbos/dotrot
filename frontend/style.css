@@ -831,3 +831,75 @@ section { padding: 80px 0; border-bottom: 1px solid #1a1d25; }
 ::-webkit-scrollbar-track { background: #07080c; }
 ::-webkit-scrollbar-thumb { background: #1a1d25; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #2a2d35; }
+
+/* ================================================================
+   Network Switcher & Token Selectors
+   ================================================================ */
+
+.network-select {
+  font-family: inherit;
+  font-size: 0.7rem;
+  background: #1a1d25;
+  color: #00ffcc;
+  border: 1px solid #00ffcc44;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  outline: none;
+}
+.network-select:hover { border-color: #00ffcc; }
+.network-select option { background: #1a1d25; color: #d5d5d5; }
+
+.token-select-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.token-select {
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: #111318;
+  color: #ffcc00;
+  border: 1px solid #ffcc0044;
+  border-radius: 6px;
+  padding: 8px 12px;
+  min-width: 120px;
+  cursor: pointer;
+  outline: none;
+}
+.token-select:hover { border-color: #ffcc00; }
+.token-select option { background: #111318; color: #d5d5d5; }
+
+.price-tag {
+  font-size: 0.85rem;
+  color: #a0a0a0;
+}
+.price-tag strong {
+  color: #ffcc00;
+}
+
+/* Claim row styling for multi-token */
+.claim-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #1a1d25;
+}
+.claim-row:last-child { border-bottom: none; }
+.claim-token {
+  font-weight: 700;
+  color: #ffcc00;
+  min-width: 50px;
+}
+.claim-amount {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+}
+.btn-sm {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+}

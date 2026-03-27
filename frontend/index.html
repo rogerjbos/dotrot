@@ -80,11 +80,12 @@
         <a href="#lore">Lore</a>
       </nav>
       <div class="header-right">
+        <select id="network-select" class="network-select" title="Switch network"></select>
         <div class="live-stat" id="live-stat" title="Total minted">
           <span class="live-dot"></span>
           <span id="stat-minted">--</span> minted
         </div>
-        <div class="live-stat" id="live-balance" title="Your PAS balance" style="display:none;">
+        <div class="live-stat" id="live-balance" title="Your balance" style="display:none;">
           <span id="stat-balance">--</span>
         </div>
         <button id="btn-connect" class="btn btn-accent">Connect Wallet</button>
@@ -110,7 +111,7 @@
       <p class="hero-tagline">Send a permanent on-chain message to any wallet. They can't delete it unless they pay.</p>
       <p class="hero-sub">
         GaG lets you send soulbound (non-transferable) NFT messages to anyone on Polkadot Asset Hub.
-        Each message costs 1 PAS. Recipients can only remove it by paying 2 PAS.
+        Each message costs $1. Recipients can only remove it by paying $2.
         If you take credit for your message, you earn a cut when they burn it.
       </p>
       <div class="hero-ctas">
@@ -147,7 +148,7 @@
         <div class="step-card fade-in">
           <span class="step-num">02</span>
           <span class="step-icon">&#x1F4B8;</span>
-          <h3>Pay 1 PAS</h3>
+          <h3>Pay $1 (pUSD, USDC, USDt, PAS)</h3>
           <p>Your payment goes directly to the smart contract. No middleman, no backend, no approvals needed — just one transaction.</p>
         </div>
         <div class="step-card fade-in">
@@ -166,7 +167,7 @@
       <div class="info-callout">
         <strong>The twist:</strong> you don't mint your own message. You trigger someone else's.
         And someone else will eventually trigger yours.
-        The recipient gets a soulbound NFT they can't transfer — only burn for 2 PAS.
+        The recipient gets a soulbound NFT they can't transfer — only burn for $2 (pUSD, USDC, USDt, PAS).
       </div>
     </div>
   </section>
@@ -203,10 +204,18 @@
             <span id="message-err" class="field-err"></span>
             <span class="field-hint">ASCII letters, numbers, and basic punctuation only. No leading/trailing/double spaces.</span>
 
+            <!-- Payment Token -->
+            <label for="mint-payment-token">Pay with</label>
+            <div class="token-select-row">
+              <select id="mint-payment-token" class="token-select">
+                <option value="" disabled selected>Loading tokens...</option>
+              </select>
+              <span class="price-tag">Cost: <strong id="mint-price">--</strong></span>
+            </div>
+
             <!-- Pricing -->
             <div class="price-row">
-              <span>Cost to send: <strong id="mint-price">1 PAS</strong></span>
-              <span>Cost to burn: <strong id="burn-fee">2 PAS</strong></span>
+              <span>Cost to burn: <strong id="burn-fee">--</strong></span>
             </div>
 
             <!-- Attribution toggle -->
@@ -228,7 +237,7 @@
 
             <p class="form-hint">
               You can enter a 0x address, Substrate SS58 address, People Chain username (e.g. rogerjbos.39), or a DotNS name.
-              Payment is in PAS tokens — no approval step needed.
+              Pay with stablecoins (USDC, USDt, pUSD) or the native token at the current market rate.
             </p>
           </form>
 
@@ -337,25 +346,21 @@
             </div>
 
             <!-- Payment token selector -->
-            <label>Burn Fee</label>
+            <label for="burn-payment-token">Pay burn fee with</label>
             <div class="token-select-row">
-              <span class="token-label" id="burn-fee-display">-- PAS</span>
-              <!-- native token — no dropdown needed -->
+              <select id="burn-payment-token" class="token-select">
                 <option value="" disabled selected>Loading tokens...</option>
               </select>
-            </div>
-            <div class="price-row">
-              <span>Burn fee: <strong id="burn-fee-display">--</strong></span>
+              <span class="price-tag">Fee: <strong id="burn-fee-display">--</strong></span>
             </div>
 
             <!-- Action buttons -->
             <div class="action-row">
-              <!-- No approval needed — native token payment -->
               <button type="button" id="btn-burn" class="btn btn-danger btn-block" disabled>Burn This Gag</button>
             </div>
 
             <p class="form-hint">
-              You must own the token to burn it. The burn fee is paid in PAS.
+              You must own the token to burn it.
               Once burned, the NFT is gone forever.
             </p>
           </form>
@@ -556,8 +561,8 @@
         <!-- Trust signal 3 -->
         <div class="trust-card panel">
           <span class="trust-icon">&#x1F4B5;</span>
-          <h3>PAS Token Only</h3>
-          <p>No speculative token. You pay in PAS. The price of chaos is fixed at 1 PAS to mint and 2 PAS to burn. You always know exactly what you are spending.</p>
+          <h3>Stable Pricing</h3>
+          <p>No speculative token risk. You can pay in stablecoin or native tokens, but the price of chaos is fixed at $1 to mint and $2 to burn. You always know exactly what you are spending.</p>
         </div>
         <!-- Trust signal 4 -->
         <div class="trust-card panel">
@@ -569,7 +574,7 @@
         <div class="trust-card panel">
           <span class="trust-icon">&#x1F512;</span>
           <h3>Exact Approvals Only</h3>
-          <p>The frontend requests approval for the exact mint/burn amount — never unlimited. You approve 1 PAS, the contract pulls 1 PAS. Check the transaction yourself.</p>
+          <p>The frontend requests approval for the exact mint/burn amount — never unlimited. You approve $1, the contract pulls $1. Check the transaction yourself.</p>
         </div>
         <!-- Trust signal 6 -->
         <div class="trust-card panel">
@@ -605,7 +610,7 @@
   </section>
 
   <!-- ============================================================ -->
-  <!--  FOOTER                                                       -->
+  <!--  FOOTER                                                      -->
   <!-- ============================================================ -->
   <footer id="footer">
     <div class="container footer-inner">
@@ -620,7 +625,7 @@
         <a id="footer-blockscout" href="#" target="_blank" rel="noopener">Contract</a>
         <a id="footer-github" href="https://github.com" target="_blank" rel="noopener">Source</a>
       </div>
-      <p class="footer-tagline">randomly assigned chaos — funded by PAS tokens, powered by poor judgment</p>
+      <p class="footer-tagline">randomly assigned chaos — funded by stablecoins or native tokens, powered by poor judgment</p>
       <p class="footer-contact">Contact: <a href="mailto:gagnft@proton.me">gagnft@proton.me</a></p>
     </div>
   </footer>

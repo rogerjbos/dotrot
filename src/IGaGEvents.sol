@@ -36,4 +36,13 @@ interface IGaGEvents is IGaGErrors {
      * @param updater The new metadata updater address.
      */
     event MetadataUpdaterSet(address indexed updater);
+
+    /**
+     * @notice Emitted when a payment token's configuration is updated.
+     * @param token       ERC-20 token address (address(0) for native).
+     * @param enabled     Whether the token is accepted.
+     * @param mintPrice   Mint price in the token's smallest unit.
+     * @param burnFee     Burn fee in the token's smallest unit.
+     */
+    event PaymentTokenUpdated(address indexed token, bool enabled, uint256 mintPrice, uint256 burnFee);
 }

@@ -5,7 +5,7 @@
  * interacts with the EVM contract through polkadot-api Revive API.
  */
 
-/* global GAG_CONFIG, GAG_ABI, GaGWallet */
+/* global GAG_CONFIG, GAG_ABI, GaGWallet, NETWORKS, getActiveNetwork, switchNetwork, getPaymentTokens, getTokenAddress, getTokenPrice */
 
 // ---------------------------------------------------------------------------
 //  State
@@ -13,11 +13,12 @@
 let userAddress = null;       // SS58 substrate address
 let userH160 = null;          // H160 EVM address
 let anonymize = true;         // ghost mode by default
-let mintPrice = 0n;
-let burnFeeAmount = 0n;
+let mintPrice = 0n;           // native token mint price (from contract)
+let burnFeeAmount = 0n;       // native token burn fee (from contract)
 let walletConnected = false;
 let resolvedRecipient = null;  // resolved H160 address for recipient
 let resolveDebounce = null;
+let selectedPaymentToken = null; // currently selected payment token symbol
 
 // ---------------------------------------------------------------------------
 //  Contract helpers
@@ -30,16 +31,27 @@ async function contractWrite(functionName, args = [], value = 0n) {
   return GaGWallet.writeContract(userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args, value);
 }
 
+async function contractWriteWithToken(functionName, args = [], tokenAddress, tokenAmount) {
+  return GaGWallet.writeContractWithToken(
+    userAddress, GAG_CONFIG.contractAddress, GAG_ABI, functionName, args, tokenAddress, tokenAmount
+  );
+}
+
 // ---------------------------------------------------------------------------
-//  Utility — format PAS (18 decimals)
+//  Utility — format token amounts
 // ---------------------------------------------------------------------------
-function formatPAS(wei) {
-  if (typeof wei !== "bigint") wei = BigInt(wei);
-  const whole = wei / 1000000000000000000n;
-  const frac = wei % 1000000000000000000n;
+function formatTokenAmount(amount, decimals = 18) {
+  if (typeof amount !== "bigint") amount = BigInt(amount);
+  const divisor = 10n ** BigInt(decimals);
+  const whole = amount / divisor;
+  const frac = amount % divisor;
   if (frac === 0n) return whole.toString();
-  const fracStr = frac.toString().padStart(18, "0").replace(/0+$/, "");
+  const fracStr = frac.toString().padStart(decimals, "0").replace(/0+$/, "");
   return `${whole}.${fracStr}`;
+}
+
+function formatPAS(wei) {
+  return formatTokenAmount(wei, 18);
 }
 
 function isAddress(val) {
@@ -268,6 +280,32 @@ function bindUI() {
   document.getElementById("btn-ghost").addEventListener("click", () => setMode(true));
   document.getElementById("btn-credit").addEventListener("click", () => setMode(false));
 
+  // Payment token selector (mint)
+  const mintTokenSelect = document.getElementById("mint-payment-token");
+  if (mintTokenSelect) {
+    populateTokenSelector(mintTokenSelect);
+    mintTokenSelect.addEventListener("change", onMintTokenChange);
+  }
+
+  // Payment token selector (burn)
+  const burnTokenSelect = document.getElementById("burn-payment-token");
+  if (burnTokenSelect) {
+    populateTokenSelector(burnTokenSelect);
+    burnTokenSelect.addEventListener("change", onBurnTokenChange);
+  }
+
+  // Network switcher
+  const networkSelect = document.getElementById("network-select");
+  if (networkSelect) {
+    for (const [id, net] of Object.entries(NETWORKS)) {
+      const opt = document.createElement("option");
+      opt.value = id;
+      opt.textContent = net.name;
+      networkSelect.appendChild(opt);
+    }
+    networkSelect.addEventListener("change", handleNetworkSwitch);
+  }
+
   // Action buttons
   document.getElementById("btn-submit").addEventListener("click", handleSubmit);
 
@@ -342,15 +380,22 @@ async function loadPrices() {
   if (!walletConnected) return;
 
   try {
+    // Native token prices from contract
     mintPrice = await contractRead("mintPrice");
     burnFeeAmount = await contractRead("burnFee");
 
-    const mintEl = document.getElementById("mint-price");
-    if (mintEl) mintEl.textContent = formatPAS(mintPrice) + " PAS";
+    // Update displays
+    updateMintPriceDisplay();
+
+    const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
     const burnEl = document.getElementById("burn-fee");
-    if (burnEl) burnEl.textContent = formatPAS(burnFeeAmount) + " PAS";
+    if (burnEl) burnEl.textContent = formatPAS(burnFeeAmount) + " " + nativeSymbol;
     const burnFeeDisplay = document.getElementById("burn-fee-display");
-    if (burnFeeDisplay) burnFeeDisplay.textContent = formatPAS(burnFeeAmount) + " PAS";
+    if (burnFeeDisplay) {
+      const burnSelect = document.getElementById("burn-payment-token");
+      const sym = burnSelect ? burnSelect.value : nativeSymbol;
+      updateBurnFeeDisplay(sym);
+    }
   } catch (err) {
     console.error("Failed to load prices:", err);
   }
@@ -504,6 +549,100 @@ function validateForm() {
 }
 
 // ---------------------------------------------------------------------------
+//  Payment Token Selection
+// ---------------------------------------------------------------------------
+function populateTokenSelector(selectEl) {
+  selectEl.innerHTML = "";
+  const tokens = getPaymentTokens();
+  const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
+
+  for (const token of tokens) {
+    const opt = document.createElement("option");
+    opt.value = token.symbol;
+    opt.textContent = token.symbol;
+    selectEl.appendChild(opt);
+  }
+
+  // Default to first stablecoin if available, else native
+  const defaultToken = tokens.find(t => t.symbol === "USDt") || tokens.find(t => t.symbol === "USDC") || tokens[0];
+  selectEl.value = defaultToken.symbol;
+  selectedPaymentToken = defaultToken.symbol;
+}
+
+function onMintTokenChange() {
+  selectedPaymentToken = document.getElementById("mint-payment-token").value;
+  updateMintPriceDisplay();
+}
+
+function onBurnTokenChange() {
+  const symbol = document.getElementById("burn-payment-token").value;
+  updateBurnFeeDisplay(symbol);
+}
+
+async function updateMintPriceDisplay() {
+  const el = document.getElementById("mint-price");
+  if (!el) return;
+
+  const symbol = selectedPaymentToken;
+  const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
+
+  if (symbol === nativeSymbol) {
+    // Native token: get AMM quote for $1 worth
+    el.textContent = "≈ " + formatPAS(mintPrice) + " " + nativeSymbol + " (based on current rate)";
+  } else {
+    const token = getPaymentTokens().find(t => t.symbol === symbol);
+    if (token && token.mintPrice) {
+      el.textContent = formatTokenAmount(token.mintPrice, token.decimals) + " " + symbol;
+    }
+  }
+}
+
+function updateBurnFeeDisplay(symbol) {
+  const el = document.getElementById("burn-fee-display");
+  if (!el) return;
+
+  const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
+
+  if (symbol === nativeSymbol) {
+    el.textContent = formatPAS(burnFeeAmount) + " " + nativeSymbol;
+  } else {
+    const token = getPaymentTokens().find(t => t.symbol === symbol);
+    if (token && token.burnFee) {
+      el.textContent = formatTokenAmount(token.burnFee, token.decimals) + " " + symbol;
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+//  Network Switching
+// ---------------------------------------------------------------------------
+async function handleNetworkSwitch() {
+  const select = document.getElementById("network-select");
+  const networkId = select.value;
+  const net = switchNetwork(networkId);
+  if (!net) return;
+
+  showStatus("Switching to " + net.name + "...", "info");
+
+  // Reinit PAPI with new endpoints
+  try {
+    await GaGWallet.reinitPAPI();
+    updateContractDisplay();
+
+    // Repopulate token selectors
+    const mintTokenSelect = document.getElementById("mint-payment-token");
+    if (mintTokenSelect) populateTokenSelector(mintTokenSelect);
+    const burnTokenSelect = document.getElementById("burn-payment-token");
+    if (burnTokenSelect) populateTokenSelector(burnTokenSelect);
+
+    await loadPrices();
+    showStatus("Connected to " + net.name, "success");
+  } catch (err) {
+    showStatus("Network switch failed: " + err.message, "error");
+  }
+}
+
+// ---------------------------------------------------------------------------
 //  Submit Handler
 // ---------------------------------------------------------------------------
 async function handleSubmit() {
@@ -520,7 +659,24 @@ async function handleSubmit() {
   showStatus("Sending your gag into the chaos buffer...", "info");
 
   try {
-    await contractWrite("submitMintIntent", [anonymize, recipient, message], mintPrice);
+    const symbol = selectedPaymentToken;
+    const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
+    const tokenAddress = getTokenAddress(symbol);
+
+    if (tokenAddress) {
+      // ERC-20 payment: use submitMintIntentWithToken + approval batching
+      const token = getPaymentTokens().find(t => t.symbol === symbol);
+      const price = token.mintPrice;
+      await contractWriteWithToken(
+        "submitMintIntentWithToken",
+        [tokenAddress, anonymize, recipient, message],
+        tokenAddress,
+        price,
+      );
+    } else {
+      // Native token payment: use original submitMintIntent with msg.value
+      await contractWrite("submitMintIntent", [anonymize, recipient, message], mintPrice);
+    }
     showStatus("Your gag has entered the live chaos buffer. You funded the machine. May the slots be cruel.", "success");
     showToast("Gag submitted! The chaos buffer has been fed.", "success", 6000);
 
@@ -552,40 +708,66 @@ async function loadClaimableBalance() {
   if (!walletConnected || !container) return;
 
   try {
-    const claimableAmount = await contractRead("claimable");
-    const formatted = formatPAS(claimableAmount);
+    const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
+    let html = "";
+    let hasAnyBalance = false;
 
-    container.innerHTML = `
-      <div class="claim-row">
-        <span class="claim-token">PAS</span>
-        <span class="claim-amount">${escapeHtml(formatted)}</span>
-        <button class="btn btn-accent btn-sm claim-btn"
-                ${claimableAmount === 0n ? "disabled" : ""}>
-          Claim
-        </button>
-      </div>`;
-
-    const claimBtn = container.querySelector(".claim-btn");
-    if (claimBtn) {
-      claimBtn.addEventListener("click", handleClaim);
+    // Native token claimable
+    const nativeClaimable = await contractRead("claimable");
+    if (nativeClaimable > 0n) {
+      hasAnyBalance = true;
+      html += `
+        <div class="claim-row">
+          <span class="claim-token">${escapeHtml(nativeSymbol)}</span>
+          <span class="claim-amount">${escapeHtml(formatPAS(nativeClaimable))}</span>
+          <button class="btn btn-accent btn-sm claim-btn" data-token="native">Claim</button>
+        </div>`;
     }
 
-    if (claimableAmount === 0n) {
-      container.innerHTML += '<p class="note">No claimable rewards yet. Send some gags and wait for burns.</p>';
+    // ERC-20 token claimables
+    const tokens = getPaymentTokens().filter(t => t.address !== "0x0000000000000000000000000000000000000000");
+    for (const token of tokens) {
+      try {
+        const amount = await contractRead("claimableForToken", [token.address]);
+        if (amount > 0n) {
+          hasAnyBalance = true;
+          html += `
+            <div class="claim-row">
+              <span class="claim-token">${escapeHtml(token.symbol)}</span>
+              <span class="claim-amount">${escapeHtml(formatTokenAmount(amount, token.decimals))}</span>
+              <button class="btn btn-accent btn-sm claim-btn" data-token="${escapeHtml(token.address)}">Claim</button>
+            </div>`;
+        }
+      } catch { /* token might not be configured on contract yet */ }
     }
+
+    if (!hasAnyBalance) {
+      html = '<p class="note">No claimable rewards yet. Send some gags and wait for burns.</p>';
+    }
+
+    container.innerHTML = html;
+
+    // Bind claim buttons
+    container.querySelectorAll(".claim-btn").forEach(btn => {
+      btn.addEventListener("click", () => handleClaim(btn.dataset.token));
+    });
   } catch (err) {
     console.error("Failed to load claimable balance:", err);
     container.innerHTML = "<p>Failed to load balance.</p>";
   }
 }
 
-async function handleClaim() {
+async function handleClaim(tokenIdentifier) {
   if (!walletConnected) return;
 
   showStatus("Claiming burn tribute...", "info");
 
   try {
-    await contractWrite("claimFees");
+    if (tokenIdentifier === "native") {
+      await contractWrite("claimFees");
+    } else {
+      await contractWrite("claimFeesForToken", [tokenIdentifier]);
+    }
     showStatus("Burn tribute claimed. You have been compensated for your menace.", "success");
     await loadClaimableBalance();
   } catch (err) {
@@ -713,7 +895,23 @@ async function handleBurn() {
   showBurnStatus("Sending burn transaction...", "info");
 
   try {
-    await contractWrite("burnToken", [tokenId], burnFeeAmount);
+    const burnSelect = document.getElementById("burn-payment-token");
+    const burnSymbol = burnSelect ? burnSelect.value : getActiveNetwork().nativeCurrency.symbol;
+    const burnTokenAddress = getTokenAddress(burnSymbol);
+
+    if (burnTokenAddress) {
+      // ERC-20 burn payment
+      const token = getPaymentTokens().find(t => t.symbol === burnSymbol);
+      await contractWriteWithToken(
+        "burnTokenWithToken",
+        [burnTokenAddress, tokenId],
+        burnTokenAddress,
+        token.burnFee,
+      );
+    } else {
+      // Native token burn payment
+      await contractWrite("burnToken", [tokenId], burnFeeAmount);
+    }
     showBurnStatus("Token #" + tokenIdStr + " has been incinerated. The curse is lifted.", "success");
     showToast("Gag burned! The wallet pollution has been cleansed.", "success", 6000);
 
@@ -812,7 +1010,9 @@ function showStatus(message, type) {
 function parseRevertReason(err) {
   if (err.reason) return err.reason;
   const msg = err.message || "";
-  if (msg.includes("InsufficientPayment")) return "Insufficient PAS sent";
+  if (msg.includes("InsufficientPayment")) return "Insufficient payment sent";
+  if (msg.includes("TokenNotSupported")) return "Selected payment token is not enabled on this contract";
+  if (msg.includes("ERC20TransferFailed")) return "Token transfer failed — check your balance and approval";
   if (msg.includes("InvalidRecipient")) return "Invalid recipient address";
   if (msg.includes("NonTransferable")) return "Tokens are non-transferable";
   if (msg.includes("NotTokenOwner")) return "You don't own this token";
@@ -898,8 +1098,9 @@ async function pollLiveStats() {
       if (balanceEl && userAddress) {
         const balance = await GaGWallet.getBalance(userAddress);
         // Balance is in Substrate 10-decimal units
-        const pas = Number(balance) / 1e10;
-        balanceEl.textContent = pas.toFixed(2) + " PAS";
+        const nativeSymbol = getActiveNetwork().nativeCurrency.symbol;
+        const amount = Number(balance) / 1e10;
+        balanceEl.textContent = amount.toFixed(2) + " " + nativeSymbol;
       }
     } catch {
       // Silently ignore

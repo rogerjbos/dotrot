@@ -8,6 +8,13 @@ import {ERC721Pausable} from "@openzeppelin/contracts/token/ERC721/extensions/ER
 import {GaGStructs} from "./GaGStructs.sol";
 import {Utils} from "./render/Utils.sol";
 
+/// @notice Minimal ERC-20 interface for pallet-assets precompile tokens.
+interface IERC20 {
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 value) external returns (bool);
+    function transferFrom(address from, address to, uint256 value) external returns (bool);
+}
+
 /**
  * @title GaG — Polkadot Asset Hub Edition
  * @author GaG Team
@@ -76,6 +83,29 @@ contract GaG is ERC721, ERC721Pausable, Ownable, GaGStructs {
 
     /// @dev Accumulated project treasury fees in native tokens.
     uint256 internal projectFees;
+
+    // -------------------------------------------------------------------------
+    //  Multi-asset payment support
+    // -------------------------------------------------------------------------
+
+    /// @notice Per-token payment configuration (address(0) = native token).
+    struct TokenConfig {
+        bool enabled;
+        uint256 mintPrice;  // Price in the token's smallest unit
+        uint256 burnFee;    // Fee in the token's smallest unit
+    }
+
+    /// @notice Payment configuration per token address (address(0) = native PAS/DOT).
+    mapping(address => TokenConfig) public tokenConfigs;
+
+    /// @notice List of all supported token addresses (for enumeration).
+    address[] public supportedTokens;
+
+    /// @dev Per-origin per-token earned fees from burns.
+    mapping(address origin => mapping(address token => uint256 fees)) internal earnedFeesMulti;
+
+    /// @dev Per-token accumulated project treasury fees.
+    mapping(address token => uint256 fees) internal projectFeesMulti;
 
     // -------------------------------------------------------------------------
     //  Constructor
@@ -253,6 +283,97 @@ contract GaG is ERC721, ERC721Pausable, Ownable, GaGStructs {
     }
 
     /**
+     * @notice Submit a mint intent paying with an ERC-20 token.
+     *         The caller must have approved this contract for the token's mintPrice.
+     * @param paymentToken ERC-20 token address (use the original payable function for native).
+     * @param anonymize    If true, origin is stored as address(0).
+     * @param recipient    Address to receive the NFT.
+     * @param message      The gag message (1-64 ASCII chars).
+     */
+    function submitMintIntentWithToken(
+        address paymentToken,
+        bool anonymize,
+        address recipient,
+        string memory message
+    ) public whenNotPaused {
+        if (!tokenConfigs[paymentToken].enabled) revert TokenNotSupported();
+        if (recipient == address(0)) revert InvalidRecipient();
+
+        Utils.validateText(message);
+
+        uint256 price = tokenConfigs[paymentToken].mintPrice;
+        bool success = IERC20(paymentToken).transferFrom(msg.sender, address(this), price);
+        if (!success) revert ERC20TransferFailed();
+
+        projectFeesMulti[paymentToken] += price;
+
+        uint8 intentIndex = _calculateMintIntentIndex();
+        _mintFromQueue(intentIndex);
+        address origin = anonymize ? address(0) : msg.sender;
+        _placeIntoQueue(intentIndex, recipient, origin, message);
+    }
+
+    /**
+     * @notice Burn a token paying with an ERC-20 token.
+     *         The caller must have approved this contract for the token's burnFee.
+     * @param paymentToken ERC-20 token address.
+     * @param tokenId      The token to burn.
+     */
+    function burnTokenWithToken(address paymentToken, uint256 tokenId) public {
+        if (!tokenConfigs[paymentToken].enabled) revert TokenNotSupported();
+        if (ownerOf(tokenId) != msg.sender) revert NotTokenOwner();
+
+        uint256 fee = tokenConfigs[paymentToken].burnFee;
+        bool success = IERC20(paymentToken).transferFrom(msg.sender, address(this), fee);
+        if (!success) revert ERC20TransferFailed();
+
+        // Split burn fee
+        if (tokenOrigin[tokenId] != address(0)) {
+            uint256 originFee = fee * burnFeeOriginShare / MAX_BPTS;
+            earnedFeesMulti[tokenOrigin[tokenId]][paymentToken] += originFee;
+            projectFeesMulti[paymentToken] += fee - originFee;
+            delete tokenOrigin[tokenId];
+        } else {
+            projectFeesMulti[paymentToken] += fee;
+        }
+
+        _burn(tokenId);
+        delete tokenMessages[tokenId];
+        delete tokenCIDs[tokenId];
+    }
+
+    /**
+     * @notice Claim earned burn-fee rewards for a specific ERC-20 token.
+     * @param token The ERC-20 token address to claim.
+     */
+    function claimFeesForToken(address token) public {
+        uint256 fee = earnedFeesMulti[msg.sender][token];
+        if (fee == 0) revert NoFees();
+
+        earnedFeesMulti[msg.sender][token] = 0;
+
+        bool success = IERC20(token).transfer(msg.sender, fee);
+        if (!success) revert ERC20TransferFailed();
+    }
+
+    /**
+     * @notice Check claimable amount for a specific ERC-20 token.
+     * @param token The ERC-20 token address.
+     * @return The claimable amount.
+     */
+    function claimableForToken(address token) public view returns (uint256) {
+        return earnedFeesMulti[msg.sender][token];
+    }
+
+    /**
+     * @notice Get all supported payment token addresses.
+     * @return Array of token addresses.
+     */
+    function getSupportedTokens() external view returns (address[] memory) {
+        return supportedTokens;
+    }
+
+    /**
      * @notice Blocked — tokens are non-transferable.
      * @dev Always reverts with `NonTransferable()`.
      */
@@ -354,6 +475,55 @@ contract GaG is ERC721, ERC721Pausable, Ownable, GaGStructs {
 
         (bool sent,) = recipient.call{value: amount}("");
         if (!sent) revert TransferFailed();
+    }
+
+    /**
+     * @notice Withdraw accumulated project treasury fees for an ERC-20 token.
+     * @param token     The ERC-20 token address.
+     * @param recipient Where to send the withdrawn fees.
+     * @param amount    Amount to withdraw, or 0 for the full balance.
+     */
+    function withdrawFeesForToken(address token, address recipient, uint256 amount) public onlyOwner {
+        if (recipient == address(0)) revert InvalidRecipient();
+        uint256 available = projectFeesMulti[token];
+        if (amount > available) revert InsufficientFees();
+
+        amount = amount == 0 ? available : amount;
+        if (amount == 0) revert NoFees();
+
+        projectFeesMulti[token] -= amount;
+
+        bool success = IERC20(token).transfer(recipient, amount);
+        if (!success) revert ERC20TransferFailed();
+    }
+
+    /**
+     * @notice Configure a payment token (ERC-20 precompile) with its mint price and burn fee.
+     * @param token     ERC-20 token address (the pallet-assets precompile address).
+     * @param enabled   Whether the token is accepted for payment.
+     * @param tokenMintPrice  Mint price in the token's smallest unit.
+     * @param tokenBurnFee    Burn fee in the token's smallest unit.
+     */
+    function configurePaymentToken(
+        address token,
+        bool enabled,
+        uint256 tokenMintPrice,
+        uint256 tokenBurnFee
+    ) public onlyOwner {
+        bool wasEnabled = tokenConfigs[token].enabled;
+
+        tokenConfigs[token] = TokenConfig({
+            enabled: enabled,
+            mintPrice: tokenMintPrice,
+            burnFee: tokenBurnFee
+        });
+
+        // Track on first enable
+        if (enabled && !wasEnabled) {
+            supportedTokens.push(token);
+        }
+
+        emit PaymentTokenUpdated(token, enabled, tokenMintPrice, tokenBurnFee);
     }
 
     // -------------------------------------------------------------------------

@@ -42,4 +42,10 @@ interface IGaGErrors {
 
     /// @notice Thrown when a native token transfer fails.
     error TransferFailed();
+
+    /// @notice Thrown when a payment token is not enabled.
+    error TokenNotSupported();
+
+    /// @notice Thrown when an ERC-20 transferFrom fails.
+    error ERC20TransferFailed();
 }
