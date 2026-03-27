@@ -91,8 +91,8 @@ contract GaG is ERC721, ERC721Pausable, Ownable, GaGStructs {
     /// @notice Per-token payment configuration (address(0) = native token).
     struct TokenConfig {
         bool enabled;
-        uint256 mintPrice;  // Price in the token's smallest unit
-        uint256 burnFee;    // Fee in the token's smallest unit
+        uint256 mintPrice; // Price in the token's smallest unit
+        uint256 burnFee; // Fee in the token's smallest unit
     }
 
     /// @notice Payment configuration per token address (address(0) = native PAS/DOT).
@@ -290,12 +290,10 @@ contract GaG is ERC721, ERC721Pausable, Ownable, GaGStructs {
      * @param recipient    Address to receive the NFT.
      * @param message      The gag message (1-64 ASCII chars).
      */
-    function submitMintIntentWithToken(
-        address paymentToken,
-        bool anonymize,
-        address recipient,
-        string memory message
-    ) public whenNotPaused {
+    function submitMintIntentWithToken(address paymentToken, bool anonymize, address recipient, string memory message)
+        public
+        whenNotPaused
+    {
         if (!tokenConfigs[paymentToken].enabled) revert TokenNotSupported();
         if (recipient == address(0)) revert InvalidRecipient();
 
@@ -504,19 +502,13 @@ contract GaG is ERC721, ERC721Pausable, Ownable, GaGStructs {
      * @param tokenMintPrice  Mint price in the token's smallest unit.
      * @param tokenBurnFee    Burn fee in the token's smallest unit.
      */
-    function configurePaymentToken(
-        address token,
-        bool enabled,
-        uint256 tokenMintPrice,
-        uint256 tokenBurnFee
-    ) public onlyOwner {
+    function configurePaymentToken(address token, bool enabled, uint256 tokenMintPrice, uint256 tokenBurnFee)
+        public
+        onlyOwner
+    {
         bool wasEnabled = tokenConfigs[token].enabled;
 
-        tokenConfigs[token] = TokenConfig({
-            enabled: enabled,
-            mintPrice: tokenMintPrice,
-            burnFee: tokenBurnFee
-        });
+        tokenConfigs[token] = TokenConfig({enabled: enabled, mintPrice: tokenMintPrice, burnFee: tokenBurnFee});
 
         // Track on first enable
         if (enabled && !wasEnabled) {
